@@ -1,0 +1,235 @@
+<!-- 
+  Individual Gallery Series Page Template for Crymare Gallery
+  - Dynamic content based on alphabetical naming system
+  - A1-A6: Lines of Life Series 2
+  - B1-Bx: Tokyo Nights  
+  - C1-Cx: Carnival Spirit
+  - D1-Dx: Winter Chapel
+  - And so on...
+  - Features: Full-screen viewer, drag navigation, zoom, smooth transitions
+  - GSAP animations for premium gallery experience
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="gallery-title">Gallery Series – Crymare</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="apple-touch-icon" href="logo.png">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/gallery-page.css">
+</head>
+<body>
+
+    <header class="main-header">
+        <div class="container">
+            <h1 class="logo">
+                <a href="index.html">Crymare</a>
+            </h1>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="#">Collections</a></li>
+                    <li><a href="#">Artworks</a></li>
+                    <li><a href="#">Artists</a></li>
+                    <li><a href="#">About</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Gallery Loading Overlay -->
+    <div class="gallery-loading-overlay" id="gallery-loading-overlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Discovering Artworks...</div>
+    </div>
+
+    <main class="gallery-main">
+        <!-- Gallery Header -->
+        <section class="gallery-header">
+            <div class="container">
+                <h1 class="gallery-title" id="main-gallery-title">Lines of Life Series 2</h1>
+            </div>
+        </section>
+
+        <!-- Gallery Grid -->
+        <section class="gallery-grid-section">
+            <div class="container">
+                <!-- Mobile Loading Message -->
+                <div class="mobile-loading-message" id="mobile-loading-message" style="display: none;">
+                    <h3>🎨 Curating Your Gallery</h3>
+                    <p>We're carefully loading these beautiful artworks for the best viewing experience. Thank you for your patience!</p>
+                </div>
+                
+                <!-- Gallery Grid Skeleton (shown while loading) -->
+                <div class="gallery-grid-skeleton" id="gallery-grid-skeleton">
+                    <div class="grid-skeleton-item">
+                        <div class="skeleton-shimmer"></div>
+                    </div>
+                    <div class="grid-skeleton-item">
+                        <div class="skeleton-shimmer"></div>
+                    </div>
+                    <div class="grid-skeleton-item">
+                        <div class="skeleton-shimmer"></div>
+                    </div>
+                    <div class="grid-skeleton-item">
+                        <div class="skeleton-shimmer"></div>
+                    </div>
+                    <div class="grid-skeleton-item">
+                        <div class="skeleton-shimmer"></div>
+                    </div>
+                    <div class="grid-skeleton-item">
+                        <div class="skeleton-shimmer"></div>
+                    </div>
+                </div>
+                
+                <div class="gallery-grid" id="gallery-grid" style="display: none;">
+                    <!-- Images will be dynamically populated here -->
+                </div>
+                
+                <!-- Series Description -->
+                <div class="series-description" id="series-description">
+                    <p id="series-description-text">A conceptual exploration of life's interconnected patterns through experimental photography and digital manipulation.</p>
+                </div>
+                
+                <!-- Slideshow Mode (Hidden by default) -->
+                <div class="gallery-slideshow hidden" id="gallery-slideshow">
+                    <div class="slideshow-container">
+                        <div class="slide-track" id="slide-track">
+                            <!-- Slideshow images will be populated here -->
+                        </div>
+                        <div class="slideshow-controls">
+                            <button class="prev-slide">❮</button>
+                            <button class="next-slide">❯</button>
+                        </div>
+                        <div class="slide-counter">
+                            <span id="current-slide">1</span> / <span id="total-slides">6</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Image Modal (Full-screen viewer) -->
+        <div class="image-modal" id="image-modal">
+            <div class="modal-backdrop"></div>
+            <div class="modal-content">
+                <button class="modal-close">×</button>
+                
+                <!-- Mobile-friendly top bar -->
+                <div class="mobile-modal-header">
+                    <div class="modal-counter" id="modal-counter">1 / 6</div>
+                    <button class="mobile-close-btn">✕</button>
+                </div>
+                
+                <!-- Swipeable image container -->
+                <div class="modal-image-container" id="modal-image-container">
+                    <img class="modal-image" id="modal-image" src="" alt="">
+                    
+                    <!-- Touch zones for navigation -->
+                    <div class="touch-zone touch-zone-left" data-action="prev"></div>
+                    <div class="touch-zone touch-zone-right" data-action="next"></div>
+                    
+                    <!-- Mobile controls -->
+                    <div class="modal-controls">
+                        <button class="modal-prev">❮</button>
+                        <button class="modal-next">❯</button>
+                    </div>
+                    
+                    <!-- Swipe indicator -->
+                    <div class="swipe-indicator" id="swipe-indicator">
+                        <div class="swipe-arrows">
+                            <span class="arrow-left">❮</span>
+                            <span class="arrow-right">❯</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Related Artworks -->
+        <section class="related-artworks">
+            <div class="container">
+                <h2 class="section-title">More from this Artist</h2>
+                <div class="related-grid">
+                    <a href="#" class="related-card">
+                        <img src="img/artwork-1.png" alt="Other Work 1">
+                        <h3>Industrial Dreams</h3>
+                    </a>
+                    <a href="#" class="related-card">
+                        <img src="img/artwork-4.png" alt="Other Work 2">
+                        <h3>Urban Landscapes</h3>
+                    </a>
+                    <a href="#" class="related-card">
+                        <img src="img/artwork-5.png" alt="Other Work 3">
+                        <h3>Abstract Moments</h3>
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-sections">
+                <div class="footer-section">
+                    <h3>Shop</h3>
+                    <ul>
+                        <li><a href="#">Search</a></li>
+                        <li><a href="#">All Artworks</a></li>
+                        <li><a href="#">All Art Collections</a></li>
+                        <li><a href="#">Experimental</a></li>
+                        <li><a href="#">Black and White</a></li>
+                        <li><a href="#">The Art of Nature</a></li>
+                        <li><a href="#">Presented Artists</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>About</h3>
+                    <ul>
+                        <li><a href="#">About Crymare</a></li>
+                        <li><a href="#">Framed Art Prints</a></li>
+                        <li><a href="#">Our Print Partner</a></li>
+                        <li><a href="#">Submit Your Work</a></li>
+                        <li><a href="#">Crymare Magazine</a></li>
+                        <li><a href="#">Contact Us</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Support</h3>
+                    <ul>
+                        <li><a href="#">Shipping Policy</a></li>
+                        <li><a href="#">Refund Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">Art Terms of Service</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">FAQ</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025, <a href="#">Crymare</a> Powered by Shopify</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- GSAP Core -->
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.13/dist/gsap.min.js"></script>
+    <!-- GSAP Plugins -->
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.13/dist/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.13/dist/Draggable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.13/dist/MotionPathPlugin.min.js"></script>
+    
+    <!-- Gallery Scripts -->
+    <script src="js/gallery-loader.js"></script>
+    <script src="js/gallery-animations.js"></script>
+</body>
+</html> 

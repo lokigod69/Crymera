@@ -1,0 +1,296 @@
+<!-- 
+  Updated homepage structure to match the original Artdoc Gallery layout:
+  - Hero section with clean slideshow (no text overlay)
+  - Featured Artworks as a 4-column grid (no horizontal scrolling)
+  - "Ready to Hang on Your Wall" section with description
+  - Featured Themes as a proper grid
+  - Email subscription section
+  - Footer with multiple columns of links
+  - Updated header with clean navigation (no search/cart)
+  - Added Google Fonts: Cinzel Decorative for header, Roboto Condensed for body
+  - Renamed to Crymare Gallery
+  - Added GSAP for premium animations and interactions
+  - Updated: Removed vendor names - single artist gallery
+  - Updated: Enhanced mobile scroll animations with progressive opacity
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop Art Photography Online – Crymare</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="apple-touch-icon" href="logo.png">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <header class="main-header">
+        <div class="container">
+            <h1 class="logo">
+                <a href="#">Crymare</a>
+            </h1>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="#">Collections</a></li>
+                    <li><a href="#">Artworks</a></li>
+                    <li><a href="#">Artists</a></li>
+                    <li><a href="#">About</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero Slideshow Section -->
+        <section class="hero-slideshow">
+            <div class="slideshow-container">
+                <div class="slide active" style="background-image: url('img/hero-1.png');"></div>
+                <div class="slide" style="background-image: url('img/artwork-3.png');"></div>
+                <div class="slide" style="background-image: url('img/theme-6.png');"></div>
+            </div>
+            <div class="slideshow-controls">
+                <button class="prev-btn">❮</button>
+                <button class="next-btn">❯</button>
+            </div>
+            <div class="slideshow-dots">
+                <span class="dot active"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+            </div>
+        </section>
+
+        <!-- Featured Artworks Section -->
+        <section class="featured-artworks">
+            <div class="container">
+                <h2 class="section-title">Featured Artworks</h2>
+                <div class="artwork-grid">
+                    <a href="gallery-page.html?series=A" class="artwork-card" data-artwork="1">
+                        <div class="artwork-image-container">
+                            <img src="img/hero-3.png" alt="Lines of Life Series 2">
+                            <div class="artwork-overlay">
+                                <span class="view-series">View Series</span>
+                            </div>
+                        </div>
+                        <div class="artwork-info">
+                            <h3>Lines of Life Series 2</h3>
+                        </div>
+                    </a>
+                    <a href="gallery-page.html?series=B" class="artwork-card" data-artwork="2">
+                        <div class="artwork-image-container">
+                            <img src="img/artwork-7.png" alt="Tokyo Nights">
+                            <div class="artwork-overlay">
+                                <span class="view-series">View Series</span>
+                            </div>
+                        </div>
+                        <div class="artwork-info">
+                            <h3>Tokyo Nights</h3>
+                        </div>
+                    </a>
+                    <a href="gallery-page.html?series=C" class="artwork-card" data-artwork="3">
+                        <div class="artwork-image-container">
+                            <img src="img/artwork-8.png" alt="Carnival Spirit">
+                            <div class="artwork-overlay">
+                                <span class="view-series">View Series</span>
+                            </div>
+                        </div>
+                        <div class="artwork-info">
+                            <h3>Carnival Spirit</h3>
+                        </div>
+                    </a>
+                    <a href="gallery-page.html?series=D" class="artwork-card" data-artwork="4">
+                        <div class="artwork-image-container">
+                            <img src="img/theme-2.png" alt="Winter Chapel">
+                            <div class="artwork-overlay">
+                                <span class="view-series">View Series</span>
+                            </div>
+                        </div>
+                        <div class="artwork-info">
+                            <h3>Winter Chapel</h3>
+                        </div>
+                    </a>
+                    <a href="gallery-page.html?series=E" class="artwork-card" data-artwork="5">
+                        <div class="artwork-image-container">
+                            <img src="img/theme-5.png" alt="Metamorphosis">
+                            <div class="artwork-overlay">
+                                <span class="view-series">View Series</span>
+                            </div>
+                        </div>
+                        <div class="artwork-info">
+                            <h3>Metamorphosis</h3>
+                        </div>
+                    </a>
+                    <a href="gallery-page.html?series=F" class="artwork-card" data-artwork="6">
+                        <div class="artwork-image-container">
+                            <img src="img/artwork-2.png" alt="Ocean's Grace">
+                            <div class="artwork-overlay">
+                                <span class="view-series">View Series</span>
+                            </div>
+                        </div>
+                        <div class="artwork-info">
+                            <h3>Ocean's Grace</h3>
+                        </div>
+                    </a>
+                    <a href="gallery-page.html?series=G" class="artwork-card" data-artwork="7">
+                        <div class="artwork-image-container">
+                            <img src="img/hero-2.png" alt="Crystal Bloom">
+                            <div class="artwork-overlay">
+                                <span class="view-series">View Series</span>
+                            </div>
+                        </div>
+                        <div class="artwork-info">
+                            <h3>Crystal Bloom</h3>
+                        </div>
+                    </a>
+                    <a href="gallery-page.html?series=H" class="artwork-card" data-artwork="8">
+                        <div class="artwork-image-container">
+                            <img src="img/artwork-6.png" alt="Floral Explosion">
+                            <div class="artwork-overlay">
+                                <span class="view-series">View Series</span>
+                            </div>
+                        </div>
+                        <div class="artwork-info">
+                            <h3>Floral Explosion</h3>
+                        </div>
+                    </a>
+                    <a href="#" class="artwork-card" data-artwork="9">
+                        <div class="artwork-image-container">
+                            <img src="img/artwork-9.png" alt="Deep Sea Dreamer">
+                            <div class="artwork-overlay">
+                                <span class="view-series">View Series</span>
+                            </div>
+                        </div>
+                        <div class="artwork-info">
+                            <h3>Deep Sea Dreamer</h3>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Ready to Hang Section -->
+        <section class="ready-to-hang">
+            <div class="container">
+                <h2>Ready to Hang on Your Wall</h2>
+                <p>Every limited edition print is framed and set for hanging on your wall. Find out more about our framed art prints.</p>
+                <a href="#" class="cta-button">About Framed Prints</a>
+            </div>
+        </section>
+
+        <!-- Featured Themes Section -->
+        <section class="featured-themes">
+            <div class="container">
+                <h2 class="section-title">Featured Themes</h2>
+                <div class="theme-grid">
+                    <a href="#" class="theme-card">
+                        <img src="img/artwork-1.png" alt="Industrial">
+                        <h3>Industrial</h3>
+                    </a>
+                    <a href="#" class="theme-card">
+                        <img src="img/artwork-4.png" alt="Wildlife">
+                        <h3>Wildlife</h3>
+                    </a>
+                    <a href="#" class="theme-card">
+                        <img src="img/artwork-5.png" alt="Abstract">
+                        <h3>Abstract</h3>
+                    </a>
+                    <a href="#" class="theme-card">
+                        <img src="img/theme-1.png" alt="Serenity">
+                        <h3>Serenity</h3>
+                    </a>
+                    <a href="#" class="theme-card">
+                        <img src="img/theme-3.png" alt="Digital Age">
+                        <h3>Digital Age</h3>
+                    </a>
+                    <a href="#" class="theme-card">
+                        <img src="img/theme-4.png" alt="Aerial">
+                        <h3>Aerial</h3>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Gallery Description Section -->
+        <section class="gallery-description">
+            <div class="container">
+                <h2>Explore Art Photography at Crymare</h2>
+                <p>Crymare Photography Gallery is an online art gallery specialising in conceptual, experimental, and mixed-media photography.</p>
+                <a href="#" class="cta-button">About Crymare</a>
+            </div>
+        </section>
+
+        <!-- Email Subscription Section -->
+        <section class="email-subscription">
+            <div class="container">
+                <h2>Subscribe to our emails</h2>
+                <p>Join our email list to learn about exclusive artworks and new collections.</p>
+                <form class="subscription-form">
+                    <input type="email" placeholder="Email" required>
+                    <button type="submit">Subscribe</button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-sections">
+                <div class="footer-section">
+                    <h3>Shop</h3>
+                    <ul>
+                        <li><a href="#">Search</a></li>
+                        <li><a href="#">All Artworks</a></li>
+                        <li><a href="#">All Art Collections</a></li>
+                        <li><a href="#">Experimental</a></li>
+                        <li><a href="#">Black and White</a></li>
+                        <li><a href="#">The Art of Nature</a></li>
+                        <li><a href="#">Presented Artists</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>About</h3>
+                    <ul>
+                        <li><a href="#">About Crymare</a></li>
+                        <li><a href="#">Framed Art Prints</a></li>
+                        <li><a href="#">Our Print Partner</a></li>
+                        <li><a href="#">Submit Your Work</a></li>
+                        <li><a href="#">Crymare Magazine</a></li>
+                        <li><a href="#">Contact Us</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Support</h3>
+                    <ul>
+                        <li><a href="#">Shipping Policy</a></li>
+                        <li><a href="#">Refund Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">Art Terms of Service</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">FAQ</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025, <a href="#">Crymare</a> Powered by Shopify</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- GSAP Core -->
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.13/dist/gsap.min.js"></script>
+    <!-- GSAP Plugins -->
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.13/dist/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.13/dist/Draggable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.13/dist/MotionPathPlugin.min.js"></script>
+    
+    <!-- Custom Scripts -->
+    <script src="js/script.js"></script>
+    <script src="js/gsap-animations.js"></script>
+</body>
+</html> 
