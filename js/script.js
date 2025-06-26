@@ -118,4 +118,4 @@ function currentSlide(index) {
             dot.classList.add('active');
         }
     });
-} 
+}

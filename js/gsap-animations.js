@@ -101,40 +101,38 @@ document.addEventListener('DOMContentLoaded', function() {
                     trigger: card,
                     start: 'top bottom',
                     end: 'bottom top',
-                    scrub: 1
+                    scrub: true
                 },
-                y: -20,
+                y: '20%',
                 ease: 'none'
             });
         });
     } else {
-        // Desktop: Keep existing animation
+        // Desktop: Staggered reveal with individual card animations
         gsap.utils.toArray('.artwork-card').forEach((card, index) => {
-            // Main card animation
             gsap.from(card, {
                 scrollTrigger: {
                     trigger: card,
                     start: 'top 85%',
-                    end: 'bottom 15%',
+                    end: 'bottom 20%',
                     toggleActions: 'play none none reverse'
                 },
-                duration: 1,
+                duration: 0.8,
                 y: 80,
                 opacity: 0,
-                scale: 0.95,
                 ease: 'power3.out',
-                delay: index * 0.1
+                delay: (index % 4) * 0.1
             });
-            
-            // Subtle parallax effect on card images
+
+            // Parallax effect on card images
             gsap.to(card.querySelector('img'), {
                 scrollTrigger: {
                     trigger: card,
                     start: 'top bottom',
                     end: 'bottom top',
-                    scrub: 1
+                    scrub: true
                 },
-                y: -30,
+                y: '20%',
                 ease: 'none'
             });
         });
@@ -186,91 +184,20 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // =========================
-    // 3. INTERACTIVE HOVER EFFECTS
+    // 3. HOVER & INTERACTIVE EFFECTS
     // =========================
-    
-    // Artwork cards sophisticated hover (fixed grid displacement)
-    gsap.utils.toArray('.artwork-card').forEach(card => {
+
+    // Artwork card hover effect (3D pop-out)
+    document.querySelectorAll('.artwork-card').forEach(card => {
         const image = card.querySelector('img');
-        const overlay = card.querySelector('.artwork-overlay');
-        const info = card.querySelector('.artwork-info');
-        
-        // Create timeline for smooth sequencing
-        const hoverTl = gsap.timeline({ paused: true });
-        
-        hoverTl
-            .to(card, { 
-                y: -15, 
-                duration: 0.4, 
-                ease: 'power2.out',
-                force3D: true,
-                transformOrigin: 'center center'
-            })
-            .to(image, { 
-                scale: 1.08, 
-                duration: 0.4, 
-                ease: 'power2.out',
-                force3D: true 
-            }, 0)
-            .to(overlay, { 
-                opacity: 1, 
-                duration: 0.3, 
-                ease: 'power2.out' 
-            }, 0.1)
-            .to(info, { 
-                y: -5, 
-                duration: 0.3, 
-                ease: 'power2.out',
-                force3D: true 
-            }, 0.1);
-        
-        card.addEventListener('mouseenter', () => hoverTl.play());
-        card.addEventListener('mouseleave', () => hoverTl.reverse());
-    });
-    
-    // Theme cards hover with depth
-    gsap.utils.toArray('.theme-card').forEach(card => {
-        const image = card.querySelector('img');
-        const title = card.querySelector('h3');
-        
-        const hoverTl = gsap.timeline({ paused: true });
-        
-        hoverTl
-            .to(card, { y: -10, scale: 1.03, duration: 0.4, ease: 'power2.out' })
-            .to(image, { scale: 1.1, duration: 0.4, ease: 'power2.out' }, 0)
-            .to(title, { y: -8, duration: 0.3, ease: 'power2.out' }, 0.1);
-        
-        card.addEventListener('mouseenter', () => hoverTl.play());
-        card.addEventListener('mouseleave', () => hoverTl.reverse());
-    });
-    
-    // Navigation hover effects
-    gsap.utils.toArray('.main-nav a').forEach(link => {
-        const hoverTl = gsap.timeline({ paused: true });
-        
-        hoverTl.to(link, { 
-            y: -3, 
-            scale: 1.05, 
-            duration: 0.3, 
-            ease: 'power2.out' 
+        card.addEventListener('mouseenter', () => {
+            gsap.to(image, { scale: 1.08, rotateZ: gsap.utils.random(-4, 4), boxShadow: '0 12px 32px rgba(0,0,0,0.35)', duration: 0.5, ease: 'power3.out' });
         });
-        
-        link.addEventListener('mouseenter', () => hoverTl.play());
-        link.addEventListener('mouseleave', () => hoverTl.reverse());
+        card.addEventListener('mouseleave', () => {
+            gsap.to(image, { scale: 1, rotateZ: 0, boxShadow: '0 0 0 rgba(0,0,0,0)', duration: 0.5, ease: 'power3.inOut' });
+        });
     });
-    
-    // CTA buttons premium hover
-    gsap.utils.toArray('.cta-button').forEach(button => {
-        const hoverTl = gsap.timeline({ paused: true });
-        
-        hoverTl
-            .to(button, { y: -5, scale: 1.05, duration: 0.3, ease: 'power2.out' })
-            .to(button, { boxShadow: '0 15px 35px rgba(187, 134, 252, 0.4)', duration: 0.3 }, 0);
-        
-        button.addEventListener('mouseenter', () => hoverTl.play());
-        button.addEventListener('mouseleave', () => hoverTl.reverse());
-    });
-    
+
     // =========================
     // 4. ADVANCED EFFECTS
     // =========================
@@ -314,4 +241,4 @@ document.addEventListener('DOMContentLoaded', function() {
     
     console.log('🎨 Crymare Gallery GSAP animations initialized successfully!');
     console.log('📱 Mobile progressive scroll animation enabled');
-}); 
+});

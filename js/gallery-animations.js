@@ -675,4 +675,4 @@ document.addEventListener('DOMContentLoaded', () => {
             window.galleryAnimations = new GalleryAnimations();
         }
     }, 100);
-}); 
+});
