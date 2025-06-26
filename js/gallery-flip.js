@@ -46,6 +46,25 @@ function openFlipModal(images) {
     `;
     document.body.insertAdjacentHTML('beforeend', modalHTML);
 
+    // Add touch/click controls for mobile
+    const flipContent = document.getElementById('flip-content');
+    flipContent.addEventListener('click', (e) => {
+        // Ignore clicks on the navigation arrows themselves
+        if (e.target.classList.contains('flip-nav-arrow')) {
+            return;
+        }
+
+        const rect = flipContent.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        const halfWidth = rect.width / 2;
+
+        if (clickX < halfWidth) {
+            flipImage(-1); // Clicked on left half, go back
+        } else {
+            flipImage(1); // Clicked on right half, go forward
+        }
+    });
+
     document.querySelector('.flip-close-button').addEventListener('click', closeFlipModal);
     document.querySelector('.flip-prev-arrow').addEventListener('click', () => flipImage(-1));
     document.querySelector('.flip-next-arrow').addEventListener('click', () => flipImage(1));
