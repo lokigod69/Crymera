@@ -125,3 +125,7 @@
         right: 10px;
     }
 }
+
+#gallery-c-banner {
+    background-image: url('../assets/c1a.png');
+}

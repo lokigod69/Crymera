@@ -44,6 +44,36 @@ function openCycleModal(images, index) {
     document.querySelector('.cycle-close-button').addEventListener('click', closeCycleModal);
     document.querySelector('.cycle-prev-arrow').addEventListener('click', () => cycleImage(-1));
     document.querySelector('.cycle-next-arrow').addEventListener('click', () => cycleImage(1));
+
+    // Tap to close
+    document.getElementById('cycle-modal').addEventListener('click', (e) => {
+        if (e.target.classList.contains('cycle-modal')) {
+            closeCycleModal();
+        }
+    });
+
+    // Swipe gestures
+    const cycleContent = document.querySelector('.cycle-content');
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    cycleContent.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    cycleContent.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipe();
+    }, { passive: true });
+
+    function handleSwipe() {
+        const swipeThreshold = 50; // minimum distance for a swipe
+        if (touchEndX < touchStartX - swipeThreshold) {
+            cycleImage(1); // Swiped left
+        } else if (touchEndX > touchStartX + swipeThreshold) {
+            cycleImage(-1); // Swiped right
+        }
+    }
 }
 
 function closeCycleModal() {

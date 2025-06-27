@@ -71,6 +71,35 @@ function openFlipModal(images) {
     document.querySelector('.flip-prev-arrow').addEventListener('click', () => flipImage(-1));
     document.querySelector('.flip-next-arrow').addEventListener('click', () => flipImage(1));
     
+    // Tap to close
+    document.getElementById('flip-modal').addEventListener('click', (e) => {
+        if (e.target.classList.contains('flip-modal')) {
+            closeFlipModal();
+        }
+    });
+
+    // Swipe gestures
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    flipContent.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    flipContent.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipe();
+    }, { passive: true });
+
+    function handleSwipe() {
+        const swipeThreshold = 50; // minimum distance for a swipe
+        if (touchEndX < touchStartX - swipeThreshold) {
+            flipImage(1); // Swiped left
+        } else if (touchEndX > touchStartX + swipeThreshold) {
+            flipImage(-1); // Swiped right
+        }
+    }
+
     // Set initial rotation explicitly
     gsap.set(flipContent, { rotationY: 0 });
 }
