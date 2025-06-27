@@ -8,6 +8,8 @@
     <link rel="icon" type="image/png" href="logo.png">
     <link rel="apple-touch-icon" href="logo.png">
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/gallery-flip.css">
+    <link rel="stylesheet" href="css/gallery-e.css">
 </head>
 <body>
 
@@ -22,31 +24,49 @@
         </div>
     </header>
 
-    <nav class="main-nav">
-        <div class="container">
-            <ul>
-                <li><a href="index.html">Home</a></li>
-                <li><a href="#">Prints</a></li>
-                <li><a href="#">Bio</a></li>
-                <li><a href="#">Testimonials</a></li>
-                <li><a href="#">Contact</a></li>
-            </ul>
-        </div>
+    <nav class="home-separator">
+        <a href="index.html">Home</a>
     </nav>
 
     <main>
+        <section class="showcase-section">
+            <div class="container">
+                <img src="assets/E1.png" alt="Showcase Image for Gallery E" class="showcase-image">
+            </div>
+        </section>
+
         <!-- Featured Artworks Section -->
         <section class="featured-artworks">
             <div class="container">
                 <div class="section-intro">
-                    <h2 class="section-title">Gallery E</h2>
-                    <h3 class="section-subtitle">Museum-Quality Fine Art Prints For Sale</h3>
-                    <p class="section-description">
-                        This gallery features the 'E' series of my fine art photography.
-                    </p>
+                    <h2 class="section-title">Gallery E Series</h2>
                 </div>
                 <div class="artwork-grid">
-                    
+                    <a href="#" class="artwork-card flip-gallery-trigger" data-flip-images='["img/e2.png"]'>
+                        <div class="artwork-image-container">
+                            <img src="img/e2.png" alt="Artwork E2">
+                        </div>
+                    </a>
+                    <a href="#" class="artwork-card flip-gallery-trigger" data-flip-images='["img/e3.png"]'>
+                        <div class="artwork-image-container">
+                            <img src="img/e3.png" alt="Artwork E3">
+                        </div>
+                    </a>
+                    <a href="#" class="artwork-card flip-gallery-trigger" data-flip-images='["img/e4.png"]'>
+                        <div class="artwork-image-container"><img src="img/e4.png" alt="Artwork E4"></div>
+                    </a>
+                    <a href="#" class="artwork-card flip-gallery-trigger" data-flip-images='["img/e5.png"]'>
+                        <div class="artwork-image-container"><img src="img/e5.png" alt="Artwork E5"></div>
+                    </a>
+                    <a href="#" class="artwork-card flip-gallery-trigger" data-flip-images='["img/e6.png"]'>
+                        <div class="artwork-image-container"><img src="img/e6.png" alt="Artwork E6"></div>
+                    </a>
+                    <a href="#" class="artwork-card flip-gallery-trigger" data-flip-images='["img/e7.png"]'>
+                        <div class="artwork-image-container"><img src="img/e7.png" alt="Artwork E7"></div>
+                    </a>
+                    <a href="#" class="artwork-card flip-gallery-trigger" data-flip-images='["img/e8.png"]'>
+                        <div class="artwork-image-container"><img src="img/e8.png" alt="Artwork E8"></div>
+                    </a>
                 </div>
             </div>
         </section>
@@ -61,10 +81,7 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.13/dist/gsap.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/gsap@3.13/dist/ScrollTrigger.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/gsap@3.13/dist/Draggable.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/gsap@3.13/dist/MotionPathPlugin.min.js"></script>
-    <script src="js/script.js"></script>
-    <script src="js/gsap-animations.js"></script>
+    <script src="js/gallery-flip.js"></script>
+
 </body>
 </html>

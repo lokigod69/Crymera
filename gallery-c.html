@@ -8,11 +8,13 @@
     <link rel="icon" type="image/png" href="logo.png">
     <link rel="apple-touch-icon" href="logo.png">
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/gallery-flip.css">
+    <link rel="stylesheet" href="css/gallery-c.css">
 </head>
 <body>
 
     <header class="main-header">
-        <div class="banner" style="background-image: url('img/hero-1.png');">
+        <div class="banner" style="background-image: url('assets/c1a.png');">
             <div class="logo">
                 <a href="index.html">
                     <span class="logo-main">CrymEra</span>
@@ -22,31 +24,33 @@
         </div>
     </header>
 
-    <nav class="main-nav">
-        <div class="container">
-            <ul>
-                <li><a href="index.html">Home</a></li>
-                <li><a href="#">Prints</a></li>
-                <li><a href="#">Bio</a></li>
-                <li><a href="#">Testimonials</a></li>
-                <li><a href="#">Contact</a></li>
-            </ul>
-        </div>
+    <nav class="home-separator">
+        <a href="index.html">Home</a>
     </nav>
 
     <main>
+        <section class="showcase-section">
+            <div class="container">
+                <img src="assets/C1.png" alt="Showcase Image for Gallery C" class="showcase-image horizontal">
+            </div>
+        </section>
+
         <!-- Featured Artworks Section -->
         <section class="featured-artworks">
             <div class="container">
                 <div class="section-intro">
-                    <h2 class="section-title">Gallery C</h2>
-                    <h3 class="section-subtitle">Museum-Quality Fine Art Prints For Sale</h3>
-                    <p class="section-description">
-                        This gallery features the 'C' series of my fine art photography.
-                    </p>
+                    <h2 class="section-title">Gallery C Series</h2>
                 </div>
-                <div class="artwork-grid">
-                    
+                <div class="artwork-grid-c">
+                    <a href="#" class="artwork-card"><div class="artwork-image-container"><img src="img/c2.png" alt="Artwork C2"></div></a>
+                    <a href="#" class="artwork-card"><div class="artwork-image-container"><img src="img/c3.png" alt="Artwork C3"></div></a>
+                    <a href="#" class="artwork-card"><div class="artwork-image-container"><img src="img/c4.png" alt="Artwork C4"></div></a>
+                    <a href="#" class="artwork-card"><div class="artwork-image-container"><img src="img/c5.png" alt="Artwork C5"></div></a>
+                    <a href="#" class="artwork-card"><div class="artwork-image-container"><img src="img/c6.png" alt="Artwork C6"></div></a>
+                    <a href="#" class="artwork-card"><div class="artwork-image-container"><img src="img/c7.png" alt="Artwork C7"></div></a>
+                    <a href="#" class="artwork-card"><div class="artwork-image-container"><img src="img/c8.png" alt="Artwork C8"></div></a>
+                    <a href="#" class="artwork-card"><div class="artwork-image-container"><img src="img/c9.png" alt="Artwork C9"></div></a>
+                    <a href="#" class="artwork-card"><div class="artwork-image-container"><img src="img/c10.png" alt="Artwork C10"></div></a>
                 </div>
             </div>
         </section>
@@ -61,10 +65,7 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.13/dist/gsap.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/gsap@3.13/dist/ScrollTrigger.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/gsap@3.13/dist/Draggable.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/gsap@3.13/dist/MotionPathPlugin.min.js"></script>
-    <script src="js/script.js"></script>
-    <script src="js/gsap-animations.js"></script>
+    <script src="js/gallery-c.js"></script>
+
 </body>
 </html>

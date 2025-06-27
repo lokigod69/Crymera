@@ -25,8 +25,9 @@ let currentRotation = 0;
 
 function openFlipModal(images) {
     flipImages = images;
+    // Reset state for a fresh modal session
     currentFlipIndex = 0;
-    currentRotation = 0;
+    currentRotation = 0; // Reset rotation for each new modal
     isFlipping = false;
 
     const modalHTML = `
@@ -45,11 +46,12 @@ function openFlipModal(images) {
         </div>
     `;
     document.body.insertAdjacentHTML('beforeend', modalHTML);
+    document.body.style.overflow = 'hidden'; // Prevent background scrolling
+
+    const flipContent = document.getElementById('flip-content');
 
     // Add touch/click controls for mobile
-    const flipContent = document.getElementById('flip-content');
     flipContent.addEventListener('click', (e) => {
-        // Ignore clicks on the navigation arrows themselves
         if (e.target.classList.contains('flip-nav-arrow')) {
             return;
         }
@@ -68,6 +70,9 @@ function openFlipModal(images) {
     document.querySelector('.flip-close-button').addEventListener('click', closeFlipModal);
     document.querySelector('.flip-prev-arrow').addEventListener('click', () => flipImage(-1));
     document.querySelector('.flip-next-arrow').addEventListener('click', () => flipImage(1));
+    
+    // Set initial rotation explicitly
+    gsap.set(flipContent, { rotationY: 0 });
 }
 
 function closeFlipModal() {
@@ -75,6 +80,7 @@ function closeFlipModal() {
     if (modal) {
         modal.remove();
     }
+    document.body.style.overflow = 'auto'; // Restore scrolling
 }
 
 function flipImage(direction) {
@@ -95,24 +101,34 @@ function flipImage(direction) {
     const frontImage = flipContent.querySelector('.flip-front img');
     const backImage = flipContent.querySelector('.flip-back img');
 
-    // Determine which side is currently hidden and set the next image there
-    const isFrontVisible = Math.round(currentRotation / 180) % 2 === 0;
+    // Determine which face is visible and update the hidden one
+    const isFrontVisible = Math.round(gsap.getProperty(flipContent, "rotationY") / 180) % 2 === 0;
+
     if (isFrontVisible) {
         backImage.src = flipImages[nextIndex];
     } else {
         frontImage.src = flipImages[nextIndex];
     }
 
-    // Calculate the new rotation
-    currentRotation += (direction === 1 ? -180 : 180);
+    const targetRotation = currentRotation + 180 * direction;
 
     gsap.to(flipContent, {
-        duration: 1,
-        rotationY: currentRotation,
-        ease: 'power2.inOut',
+        duration: 1.2, // Slower animation
+        rotationY: targetRotation,
+        ease: "power2.inOut",
         onComplete: () => {
+            currentRotation = targetRotation;
             currentFlipIndex = nextIndex;
             isFlipping = false;
+
+            // After the flip, the back becomes the new front
+            // To simplify, we can just update the src of both images
+            // so the next flip is always from the correct state.
+            if (isFrontVisible) {
+                frontImage.src = flipImages[nextIndex];
+            } else {
+                backImage.src = flipImages[nextIndex];
+            }
         }
     });
 }

@@ -8,6 +8,7 @@
     <link rel="icon" type="image/png" href="logo.png">
     <link rel="apple-touch-icon" href="logo.png">
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/gallery-flip.css">
 </head>
 <body>
 
@@ -22,39 +23,36 @@
         </div>
     </header>
 
-    <nav class="main-nav">
-        <div class="container">
-            <ul>
-                <li><a href="index.html">Home</a></li>
-                <li><a href="#">Prints</a></li>
-                <li><a href="#">Bio</a></li>
-                <li><a href="#">Testimonials</a></li>
-                <li><a href="#">Contact</a></li>
-            </ul>
-        </div>
+    <nav class="home-separator">
+        <a href="index.html">Home</a>
     </nav>
 
     <main>
+        <section class="showcase-section">
+            <div class="container">
+                <img src="assets/B1.png" alt="Showcase Image for Gallery B" class="showcase-image">
+            </div>
+        </section>
+
         <!-- Featured Artworks Section -->
         <section class="featured-artworks">
             <div class="container">
                 <div class="section-intro">
-                    <h2 class="section-title">Gallery B</h2>
-                    <h3 class="section-subtitle">Museum-Quality Fine Art Prints For Sale</h3>
-                    <p class="section-description">
-                        This gallery features the 'B' series of my fine art photography.
-                    </p>
+                    <h2 class="section-title">Gallery B Series</h2>
                 </div>
                 <div class="artwork-grid">
-                    <a href="#" class="artwork-card"><div class="artwork-image-container"><img src="img/b2.png" alt="Artwork B2"></div></a>
-                    <a href="#" class="artwork-card"><div class="artwork-image-container"><img src="img/b4.png" alt="Artwork B4"></div></a>
-                    <a href="#" class="artwork-card"><div class="artwork-image-container"><img src="img/b5.png" alt="Artwork B5"></div></a>
-                    <a href="#" class="artwork-card"><div class="artwork-image-container"><img src="img/b6.png" alt="Artwork B6"></div></a>
-                    <a href="#" class="artwork-card"><div class="artwork-image-container"><img src="img/b7.png" alt="Artwork B7"></div></a>
-                    <a href="#" class="artwork-card"><div class="artwork-image-container"><img src="img/b8.png" alt="Artwork B8"></div></a>
-                    <a href="#" class="artwork-card"><div class="artwork-image-container"><img src="img/b9.png" alt="Artwork B9"></div></a>
-                    <a href="#" class="artwork-card"><div class="artwork-image-container"><img src="img/b10.png" alt="Artwork B10"></div></a>
-                    <a href="#" class="artwork-card"><div class="artwork-image-container"><img src="img/b11.png" alt="Artwork B11"></div></a>
+                    <a href="#" class="artwork-card flip-gallery-trigger" data-flip-images='["img/b2.png", "assets/b2a.png", "assets/b2b.png", "assets/b2c.png", "assets/b2d.png", "assets/b2e.png", "assets/b2f.png"]'><div class="artwork-image-container"><img src="img/b2.png" alt="Artwork B2"></div></a>
+                    <a href="#" class="artwork-card flip-gallery-trigger" data-flip-images='["img/b3.png", "assets/b3a.png", "assets/b3b.png", "assets/b3c.png"]'><div class="artwork-image-container"><img src="img/b3.png" alt="Artwork B3"></div></a>
+                    <a href="#" class="artwork-card flip-gallery-trigger" data-flip-images='["img/b4.png", "assets/b4a.png", "assets/b4b.png", "assets/b4c.png", "assets/b4d.png", "assets/b4e.png"]'><div class="artwork-image-container"><img src="img/b4.png" alt="Artwork B4"></div></a>
+                    <a href="#" class="artwork-card flip-gallery-trigger" data-flip-images='["img/b5.png", "assets/b5a.png", "assets/b5b.png", "assets/b5c.png", "assets/b5d.png", "assets/b5e.png", "assets/b5f.png"]'><div class="artwork-image-container"><img src="img/b5.png" alt="Artwork B5"></div></a>
+                    <a href="#" class="artwork-card flip-gallery-trigger" data-flip-images='["img/b6.png", "assets/b6a.png", "assets/b6b.png", "assets/b6c.png"]'><div class="artwork-image-container"><img src="img/b6.png" alt="Artwork B6"></div></a>
+                    <a href="#" class="artwork-card flip-gallery-trigger" data-flip-images='["img/b7.png", "assets/b7a.png", "assets/b7b.png", "assets/b7c.png", "assets/b7d.png", "assets/b7e.png", "assets/b7f.png", "assets/b7g.png", "assets/b7h.png", "assets/b7i.png", "assets/b7j.png", "assets/b7k.png", "assets/b7l.png"]'><div class="artwork-image-container"><img src="img/b7.png" alt="Artwork B7"></div></a>
+                    <a href="#" class="artwork-card flip-gallery-trigger" data-flip-images='["img/b8.png", "assets/b8a.png", "assets/b8b.png", "assets/b8c.png", "assets/b8d.png", "assets/b8e.png", "assets/b8f.png"]'><div class="artwork-image-container"><img src="img/b8.png" alt="Artwork B8"></div></a>
+                    <a href="#" class="artwork-card flip-gallery-trigger" data-flip-images='["img/b9.png", "assets/b9a.png", "assets/b9b.png", "assets/b9c.png", "assets/b9d.png", "assets/b9e.png", "assets/b9f.png", "assets/b9g.png"]'><div class="artwork-image-container"><img src="img/b9.png" alt="Artwork B9"></div></a>
+                    <a href="#" class="artwork-card flip-gallery-trigger" data-flip-images='["img/b10.png", "assets/b10a.png", "assets/b10b.png", "assets/b10c.png", "assets/b10d.png", "assets/b10e.png", "assets/b10f.png", "assets/b10g.png", "assets/b10h.png"]'><div class="artwork-image-container"><img src="img/b10.png" alt="Artwork B10"></div></a>
+                    <a href="#" class="artwork-card flip-gallery-trigger" data-flip-images='["img/b11.png", "assets/b11a.png", "assets/b11b.png", "assets/b11c.png"]'><div class="artwork-image-container"><img src="img/b11.png" alt="Artwork B11"></div></a>
+                    <a href="#" class="artwork-card flip-gallery-trigger" data-flip-images='["img/b12.png", "assets/b12a.png", "assets/b12b.png", "assets/b12c.png"]'><div class="artwork-image-container"><img src="img/b12.png" alt="Artwork B12"></div></a>
+                    <a href="#" class="artwork-card flip-gallery-trigger" data-flip-images='["img/b13.png", "assets/b13a.png", "assets/b13b.png", "assets/b13c.png"]'><div class="artwork-image-container"><img src="img/b13.png" alt="Artwork B13"></div></a>
                 </div>
             </div>
         </section>
@@ -69,10 +67,7 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.13/dist/gsap.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/gsap@3.13/dist/ScrollTrigger.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/gsap@3.13/dist/Draggable.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/gsap@3.13/dist/MotionPathPlugin.min.js"></script>
-    <script src="js/script.js"></script>
-    <script src="js/gsap-animations.js"></script>
+    <script src="js/gallery-flip.js"></script>
+
 </body>
 </html>
