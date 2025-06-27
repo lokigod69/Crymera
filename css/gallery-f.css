@@ -90,3 +90,38 @@
     top: 50%;
     transform: translateY(-50%);
 }
+
+/* Responsive Styles for Gallery F */
+@media (max-width: 768px) {
+    .artwork-grid-f {
+        grid-template-columns: 1fr; /* Single column on smaller screens */
+        gap: 20px;
+    }
+
+    .artwork-grid-f .artwork-image-container img {
+        width: 90%; /* Adjust image width for mobile */
+    }
+
+    .cycle-content {
+        width: 100vw;
+        height: 100vh;
+    }
+
+    .cycle-close-button {
+        top: 15px;
+        right: 20px;
+        font-size: 24px;
+    }
+
+    .cycle-nav-arrow {
+        font-size: 24px;
+    }
+
+    .cycle-prev-arrow {
+        left: 10px;
+    }
+
+    .cycle-next-arrow {
+        right: 10px;
+    }
+}
