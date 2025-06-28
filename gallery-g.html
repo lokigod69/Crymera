@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gallery G | CrymEra</title>
+    <link rel="icon" type="image/png" href="../logo.png">
+    <link rel="apple-touch-icon" href="../logo.png">
+    <link rel="stylesheet" href="../css/gallery-page.css">
+    <link rel="stylesheet" href="../css/gallery-g.css">
+    <link rel="stylesheet" href="../css/gallery-flip.css">
+</head>
+<body>
+
+    <header class="main-header">
+        <div class="banner">
+            <div class="logo">
+                <a href="../index.html">
+                    <span class="logo-main">CrymEra</span>
+                    <span class="logo-sub">Photography</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <nav class="home-separator">
+        <a href="../index.html">Home</a>
+    </nav>
+
+    <main>
+        <section class="gallery-intro">
+            <h1 class="gallery-title">Gallery G</h1>
+            <p class="gallery-description">A collection of beautiful moments captured in time.</p>
+        </section>
+
+        <section class="gallery-grid-container">
+            <div class="gallery-grid gallery-grid-a">
+                <!-- Images will be loaded here by gallery-loader.js -->
+            </div>
+        </section>
+    </main>
+
+    <div class="modal">
+        <div class="modal-content">
+            <img src="" alt="Modal Image" class="modal-image">
+            <div class="modal-caption"></div>
+            <div class="modal-close">&times;</div>
+            <div class="modal-prev">&#10094;</div>
+            <div class="modal-next">&#10095;</div>
+        </div>
+    </div>
+
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-links">
+                <a href="#">Contact</a>
+                <a href="#">Privacy Policy</a>
+            </div>
+            <div class="social-links">
+                <a href="#">Facebook</a>
+                <a href="#">Instagram</a>
+                <a href="#">Pinterest</a>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 CrymEra. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../js/gallery-loader.js"></script>
+    <script src="../js/gallery-flip.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const images = [
+                { src: '../assets/g1a.png', title: 'G1A', orientation: 'landscape' },
+                { src: '../assets/g1b.png', title: 'G1B', orientation: 'portrait' },
+                { src: '../assets/g1c.png', title: 'G1C', orientation: 'landscape' },
+                { src: '../assets/g1d.png', title: 'G1D', orientation: 'portrait' },
+                { src: '../assets/g1e.png', title: 'G1E', orientation: 'landscape' },
+                { src: '../assets/g1f.png', title: 'G1F', orientation: 'portrait' },
+            ];
+            const grid = document.querySelector('.gallery-grid');
+            loadImages(grid, images);
+        });
+    </script>
+</body>
+</html>

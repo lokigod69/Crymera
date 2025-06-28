@@ -37,35 +37,67 @@
                         These curated galleries feature my fine art landscape & nature photography from travels over the past twenty years. I specialize in creating beautiful images of the natural environment including mountains, wilderness areas and gardens. My adventures have taken me to many places including California, Utah, Colorado and Italy. I offer limited and open edition photography prints on ready-to-hang TruLife® Acrylic face mounts and ChromaLuxe Edge Mounts. Canson Infinity Platine Fibre watercolor prints are also available if you wish to work with your own framer.
                     </p>
                 </div>
-                <div class="artwork-grid">
-                    <a href="gallery-a.html" class="artwork-card" data-artwork="1">
+
+                <!-- Add this inside .featured-artworks section, right after .section-intro div -->
+                <div class="view-toggle">
+                    <button class="view-btn active" data-view="scroll">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 12V8a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h4"/>
+                            <path d="m16 16 5 5m0-5-5 5"/>
+                            <path d="M5 12h5"/>
+                        </svg>
+                        <span>Scroll View</span>
+                    </button>
+                    <button class="view-btn" data-view="grid">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="7" height="7"/>
+                            <rect x="14" y="3" width="7" height="7"/>
+                            <rect x="3" y="14" width="7" height="7"/>
+                            <rect x="14" y="14" width="7" height="7"/>
+                        </svg>
+                        <span>Grid View</span>
+                    </button>
+                </div>
+
+                <!-- Add grid view container after the toggle -->
+                <div class="artwork-grid-normal" style="display: none;">
+                    <!-- Images will be duplicated here by JS -->
+                </div>
+
+                <div class="artwork-grid-stacked">
+                    <a href="gallery-a.html" class="artwork-card-stacked" data-artwork="1">
                         <div class="artwork-image-container">
                             <img src="assets/A1.png" alt="Gallery Image A">
                         </div>
                     </a>
-                    <a href="gallery-b.html" class="artwork-card" data-artwork="2">
+                    <a href="gallery-b.html" class="artwork-card-stacked" data-artwork="2">
                         <div class="artwork-image-container">
                             <img src="assets/B1.png" alt="Gallery Image B">
                         </div>
                     </a>
-                    <a href="gallery-c.html" class="artwork-card" data-artwork="3">
+                    <a href="gallery-c.html" class="artwork-card-stacked" data-artwork="3">
                         <div class="artwork-image-container">
                             <img src="assets/C1.png" alt="Gallery Image C">
                         </div>
                     </a>
-                    <a href="gallery-d.html" class="artwork-card" data-artwork="4">
+                    <a href="gallery-d.html" class="artwork-card-stacked" data-artwork="4">
                         <div class="artwork-image-container">
                             <img src="assets/D1.png" alt="Gallery Image D">
                         </div>
                     </a>
-                    <a href="gallery-e.html" class="artwork-card" data-artwork="5">
+                    <a href="gallery-e.html" class="artwork-card-stacked" data-artwork="5">
                         <div class="artwork-image-container">
                             <img src="assets/E1.png" alt="Gallery Image E">
                         </div>
                     </a>
-                    <a href="gallery-f.html" class="artwork-card" data-artwork="6">
+                    <a href="gallery-f.html" class="artwork-card-stacked" data-artwork="6">
                         <div class="artwork-image-container">
                             <img src="assets/F1.png" alt="Gallery Image F">
+                        </div>
+                    </a>
+                    <a href="gallery-g.html" class="artwork-card-stacked" data-artwork="7">
+                        <div class="artwork-image-container">
+                            <img src="assets/G1.png" alt="Gallery Image G">
                         </div>
                     </a>
                 </div>
@@ -100,5 +132,6 @@
     <!-- Custom Scripts -->
     <script src="js/script.js"></script>
     <script src="js/gsap-animations.js"></script>
+    <script src="js/home-animations.js"></script>
 </body>
 </html>
