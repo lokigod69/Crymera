@@ -286,44 +286,17 @@ img {
     height: 24px;
 }
 
-/* Grid View Layout */
-.artwork-grid-normal {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
-    max-width: 1600px;
-    margin: 0 auto;
-    padding: 40px 20px;
+/* Bottom toggle specific styles */
+.view-toggle-bottom {
+    margin-top: 80px; /* Space after gallery */
+    margin-bottom: 40px;
 }
 
-.grid-item {
-    position: relative;
-    overflow: hidden;
-    border-radius: 8px;
+/* Ensure bottom toggle hidden when grid view is active */
+.grid-active .view-toggle-bottom {
+    display: none;
 }
 
-.grid-item.horizontal {
-    grid-column: span 2;
-}
-
-.grid-item.portrait {
-    grid-column: span 1;
-}
-
-.grid-item img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    border-radius: 8px;
-    transition: transform 0.3s ease;
-}
-
-.grid-item:hover img {
-    transform: scale(1.05);
-}
-
-/* Responsive Grid for Homepage */
 @media (max-width: 1200px) {
     .artwork-grid-normal {
         grid-template-columns: repeat(3, 1fr);
@@ -355,37 +328,164 @@ img {
 
 @media (max-width: 768px) {
     .artwork-grid-normal {
-        grid-template-columns: repeat(2, 1fr);
+        display: grid; /* Ensure it's a grid */
+        grid-template-columns: 1fr; /* Single column on mobile */
+        gap: 20px; /* Add gap between items */
+        padding: 20px 16px;
     }
-}
 
-@media (max-width: 600px) {
+    .artwork-grid-normal .grid-item {
+        width: 100%;
+        height: auto; /* Let height be automatic */
+        grid-column: span 1 !important; /* Ensure it spans only one column */
+    }
+
+    .artwork-grid-normal .grid-item img {
+        width: 100%;
+        height: auto; /* Maintain aspect ratio */
+        object-fit: contain; /* Prevent cropping */
+    }
+
     .artwork-grid-normal {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr; /* Single column on mobile */
+        padding: 20px 16px;
     }
-    .artwork-grid {
-        grid-template-columns: 1fr;
-        padding: 1rem;
+
+    .grid-item {
+        margin-bottom: 20px;
+        break-inside: avoid; /* Prevents items from breaking across columns */
+    }
+
+    .grid-item.horizontal,
+    .grid-item.portrait {
+        grid-column: span 1; /* All items take one column on mobile */
+    }
+
+    /* Responsive GSAP Animation */
+    .artwork-card-stacked .artwork-image-container {
+        width: 90%; /* More screen usage on mobile */
+        max-width: none;
+        max-height: 70vh; /* Ensure fits in viewport */
+    }
+
+    /* Mobile View Toggle */
+    .view-toggle {
+        position: sticky;
+        top: 0;
+        background: var(--primary-bg-color);
+        z-index: 100;
+        padding: 16px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        margin: 0;
+    }
+
+    .view-btn {
+        flex: 1;
+        padding: 10px 16px;
+        font-size: 14px;
+    }
+
+    .view-btn svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .artwork-grid-stacked {
+        min-height: 100vh; /* Ensure proper height on mobile */
+    }
+    
+    /* Hide any overflow that might show duplicate content */
+    .featured-artworks {
+        overflow: hidden;
     }
 }
 
-/* Toggle between grid and stacked layout */
+/* Universal Mobile Gallery Grid Fix */
 @media (max-width: 768px) {
-    .artwork-grid-stacked {
-        display: none; /* Hide stacked on mobile */
+    /* Target all possible gallery containers to enforce a single-column layout */
+    .artwork-grid,
+    .gallery-grid,
+    .grid,
+    [class*="gallery-container"],
+    [class*="gallery"] .grid {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 20px !important;
     }
-    .artwork-grid {
-        display: grid; /* Show grid on mobile */
+
+    /* Ensure all gallery items and their containers take up full width */
+    .artwork-grid .artwork-card,
+    .gallery-grid .gallery-item,
+    .grid-item,
+    .artwork-card,
+    .artwork-image-container,
+    [class*="image-container"] {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+        margin: 0 !important;
+        flex: none !important;
+        padding-bottom: 0 !important; /* Override aspect ratio hacks */
+    }
+
+    /* Ensure images display correctly without cropping */
+    .artwork-grid img,
+    .gallery-grid img,
+    .grid img,
+    [class*="gallery"] img {
+        width: 100% !important;
+        height: auto !important;
+        object-fit: contain !important; /* Use contain to prevent cropping */
+        max-height: 80vh !important; /* Prevent overly tall images */
+        border-radius: 8px; /* Consistent rounding */
     }
 }
 
-@media (min-width: 769px) {
-    .artwork-grid {
-        display: none; /* Hide grid on desktop */
+/* Universal mobile gallery fix */
+@media (max-width: 768px) {
+    /* Target all possible gallery containers that are not the main homepage grid */
+    main [class*="grid"]:not(.artwork-grid-stacked):not(.artwork-grid-normal),
+    .gallery-grid,
+    .artwork-grid:not(.artwork-grid-stacked):not(.artwork-grid-normal) {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 20px !important;
     }
-    .artwork-grid-stacked {
-        display: block; /* Show stacked on desktop */
+
+    /* Ensure no image cropping in these galleries */
+    main [class*="grid"]:not(.artwork-grid-stacked):not(.artwork-grid-normal) img,
+    .gallery-grid img,
+    .artwork-grid:not(.artwork-grid-stacked):not(.artwork-grid-normal) img {
+        width: 100% !important;
+        height: auto !important;
+        object-fit: contain !important;
     }
+}
+
+@media (max-width: 768px) {
+    .banner {
+        height: 300px; /* Reduce banner height on mobile */
+        background-attachment: scroll; /* Improve mobile performance */
+    }
+}
+
+/* Gallery Divider */
+.gallery-divider {
+    text-align: center;
+    margin: 60px 0 30px;
+    color: #666;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.gallery-divider::before {
+    content: '';
+    display: block;
+    width: 100px;
+    height: 1px;
+    background: #ddd;
+    margin: 0 auto 20px;
 }
 
 /* Footer */

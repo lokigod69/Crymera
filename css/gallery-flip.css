@@ -91,7 +91,7 @@
     }
 
     .flip-nav-arrow {
-        font-size: 32px;
+        display: none;
     }
 
     .flip-prev-arrow {
