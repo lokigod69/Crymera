@@ -109,13 +109,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- GSAP Stacked Scroll Animation ---
     if (stackedView.style.display !== 'none') {
-        // Mobile-Optimized GSAP Stacked Scroll Animation (Slide)
         if (isMobile) {
+            // Mobile-Optimized GSAP Stacked Scroll Animation (Slide)
             cards.forEach((card, i) => {
                 gsap.set(card, {
                     zIndex: cards.length - i,
-                    yPercent: i === 0 ? 0 : 100,
-                    opacity: i === 0 ? 1 : 0.5
+                    yPercent: i === 0 ? 0 : 100, // Start first card in view, others below
+                    opacity: i === 0 ? 1 : 0.5 // First card is visible, others are faded
                 });
             });
 
@@ -125,27 +125,29 @@ document.addEventListener('DOMContentLoaded', () => {
                     start: 'top top',
                     end: () => `+=${(cards.length - 1) * window.innerHeight}`,
                     pin: true,
-                    scrub: 1,
+                    scrub: 1, // Smoother scrub value for touch
                     anticipatePin: 1,
-                    invalidateOnRefresh: true
+                    invalidateOnRefresh: true // Recalculate on resize
                 }
             });
 
+            // Animate cards sequentially
             cards.forEach((card, i) => {
                 if (i < cards.length - 1) {
                     const nextCard = cards[i + 1];
+
                     tl.to(card, {
-                        yPercent: -100,
-                        opacity: 0.5,
+                        yPercent: -100, // Move current card up and out of view
+                        opacity: 0.5, // Fade it out
                         ease: 'power2.inOut',
                         duration: 1
                     })
                     .to(nextCard, {
-                        yPercent: 0,
-                        opacity: 1,
+                        yPercent: 0, // Move next card into view
+                        opacity: 1, // Fade it in
                         ease: 'power2.inOut',
                         duration: 1
-                    }, '<');
+                    }, '<'); // Start this animation at the same time as the previous one
                 }
             });
         } else {
@@ -172,7 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 scrollTrigger: {
                     trigger: container,
                     start: 'top top',
-                    end: `+=${(cards.length - 1) * 500}`,
+                    end: `+=${(cards.length) * 500}`,
                     pin: true,
                     scrub: 1,
                     anticipatePin: 1,
