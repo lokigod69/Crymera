@@ -107,48 +107,96 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const isMobile = window.innerWidth <= 768;
 
-    // --- Mobile-Optimized GSAP Stacked Scroll Animation ---
+    // --- GSAP Stacked Scroll Animation ---
     if (stackedView.style.display !== 'none') {
-        // Set initial positions for all cards
-        cards.forEach((card, i) => {
-            gsap.set(card, {
-                zIndex: cards.length - i,
-                yPercent: i === 0 ? 0 : 100, // Start first card in view, others below
-                opacity: i === 0 ? 1 : 0.5 // First card is visible, others are faded
+        // Mobile-Optimized GSAP Stacked Scroll Animation (Slide)
+        if (isMobile) {
+            cards.forEach((card, i) => {
+                gsap.set(card, {
+                    zIndex: cards.length - i,
+                    yPercent: i === 0 ? 0 : 100,
+                    opacity: i === 0 ? 1 : 0.5
+                });
             });
-        });
 
-        const tl = gsap.timeline({
-            scrollTrigger: {
-                trigger: container,
-                start: 'top top',
-                end: () => `+=${(cards.length - 1) * window.innerHeight}`,
-                pin: true,
-                scrub: 1, // Smoother scrub value for touch
-                anticipatePin: 1,
-                markers: false,
-                invalidateOnRefresh: true // Recalculate on resize
-            }
-        });
+            const tl = gsap.timeline({
+                scrollTrigger: {
+                    trigger: container,
+                    start: 'top top',
+                    end: () => `+=${(cards.length - 1) * window.innerHeight}`,
+                    pin: true,
+                    scrub: 1,
+                    anticipatePin: 1,
+                    invalidateOnRefresh: true
+                }
+            });
 
-        // Animate cards sequentially
-        cards.forEach((card, i) => {
-            if (i < cards.length - 1) {
-                const nextCard = cards[i + 1];
+            cards.forEach((card, i) => {
+                if (i < cards.length - 1) {
+                    const nextCard = cards[i + 1];
+                    tl.to(card, {
+                        yPercent: -100,
+                        opacity: 0.5,
+                        ease: 'power2.inOut',
+                        duration: 1
+                    })
+                    .to(nextCard, {
+                        yPercent: 0,
+                        opacity: 1,
+                        ease: 'power2.inOut',
+                        duration: 1
+                    }, '<');
+                }
+            });
+        } else {
+            // Desktop GSAP Stacked Scroll Animation (Scale)
+            gsap.set(cards, {
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                xPercent: -50,
+                yPercent: -50,
+                transformOrigin: 'center center',
+            });
 
-                tl.to(card, {
-                    yPercent: -100, // Move current card up and out of view
-                    opacity: 0.5, // Fade it out
-                    ease: 'power2.inOut',
-                    duration: 1
-                })
-                .to(nextCard, {
-                    yPercent: 0, // Move next card into view
-                    opacity: 1, // Fade it in
-                    ease: 'power2.inOut',
-                    duration: 1
-                }, '-=1'); // Start this animation at the same time as the previous one
-            }
-        });
+            // Set initial state
+            cards.forEach((card, i) => {
+                gsap.set(card, {
+                    zIndex: cards.length - i,
+                    scale: i === 0 ? 1 : 0.8,
+                    opacity: i === 0 ? 1 : 0,
+                });
+            });
+
+            const tl = gsap.timeline({
+                scrollTrigger: {
+                    trigger: container,
+                    start: 'top top',
+                    end: `+=${(cards.length - 1) * 500}`,
+                    pin: true,
+                    scrub: 1,
+                    anticipatePin: 1,
+                    invalidateOnRefresh: true
+                }
+            });
+
+            cards.forEach((card, i) => {
+                if (i < cards.length - 1) {
+                    const nextCard = cards[i + 1];
+                    tl.to(card, {
+                        scale: 0.8,
+                        opacity: 0,
+                        ease: 'sine.inOut',
+                        duration: 1
+                    })
+                    .to(nextCard, {
+                        scale: 1,
+                        opacity: 1,
+                        ease: 'sine.inOut',
+                        duration: 1
+                    }, '<');
+                }
+            });
+        }
     }
 });

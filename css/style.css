@@ -346,6 +346,11 @@ img {
         object-fit: contain; /* Prevent cropping */
     }
 
+    .grid-item {
+        margin-bottom: 20px;
+        break-inside: avoid; /* Prevents items from breaking across columns */
+    }
+
     .artwork-grid-normal {
         grid-template-columns: 1fr; /* Single column on mobile */
         padding: 20px 16px;

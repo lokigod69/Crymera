@@ -51,21 +51,25 @@ function openFlipModal(images) {
     const flipContent = document.getElementById('flip-content');
 
     // Add touch/click controls for mobile
-    flipContent.addEventListener('click', (e) => {
-        if (e.target.classList.contains('flip-nav-arrow')) {
-            return;
-        }
+    const isMobile = window.innerWidth <= 768;
 
-        const rect = flipContent.getBoundingClientRect();
-        const clickX = e.clientX - rect.left;
-        const halfWidth = rect.width / 2;
+    if (!isMobile) {
+        flipContent.addEventListener('click', (e) => {
+            if (e.target.classList.contains('flip-nav-arrow')) {
+                return;
+            }
 
-        if (clickX < halfWidth) {
-            flipImage(-1); // Clicked on left half, go back
-        } else {
-            flipImage(1); // Clicked on right half, go forward
-        }
-    });
+            const rect = flipContent.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const halfWidth = rect.width / 2;
+
+            if (clickX < halfWidth) {
+                flipImage(-1); // Clicked on left half, go back
+            } else {
+                flipImage(1); // Clicked on right half, go forward
+            }
+        });
+    }
 
     document.querySelector('.flip-close-button').addEventListener('click', closeFlipModal);
     document.querySelector('.flip-prev-arrow').addEventListener('click', () => flipImage(-1));
