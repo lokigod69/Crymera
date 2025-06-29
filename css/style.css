@@ -297,6 +297,11 @@ img {
     display: none;
 }
 
+/* Ensure stacked view hidden when grid view is active */
+.grid-active .artwork-grid-stacked {
+    display: none !important;
+}
+
 @media (max-width: 1200px) {
     .artwork-grid-normal {
         grid-template-columns: repeat(3, 1fr);
@@ -344,11 +349,6 @@ img {
         width: 100%;
         height: auto; /* Maintain aspect ratio */
         object-fit: contain; /* Prevent cropping */
-    }
-
-    .grid-item {
-        margin-bottom: 20px;
-        break-inside: avoid; /* Prevents items from breaking across columns */
     }
 
     .artwork-grid-normal {

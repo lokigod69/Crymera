@@ -109,96 +109,59 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- GSAP Stacked Scroll Animation ---
     if (stackedView.style.display !== 'none') {
-        if (isMobile) {
-            // Mobile-Optimized GSAP Stacked Scroll Animation (Slide)
-            cards.forEach((card, i) => {
-                gsap.set(card, {
-                    zIndex: cards.length - i,
-                    yPercent: i === 0 ? 0 : 100, // Start first card in view, others below
-                    opacity: i === 0 ? 1 : 0.5 // First card is visible, others are faded
-                });
-            });
+        // Pure size-based bell curve animation
+        const cards = gsap.utils.toArray('.artwork-card-stacked');
+        const container = document.querySelector('.artwork-grid-stacked');
+        if (!cards.length || !container) return;
 
-            const tl = gsap.timeline({
-                scrollTrigger: {
-                    trigger: container,
-                    start: 'top top',
-                    end: () => `+=${(cards.length - 1) * window.innerHeight}`,
-                    pin: true,
-                    scrub: 1, // Smoother scrub value for touch
-                    anticipatePin: 1,
-                    invalidateOnRefresh: true // Recalculate on resize
-                }
-            });
+        const isMobile = window.innerWidth <= 768;
+        const scrollDistance = cards.length * window.innerHeight * 2.5; // More distance for smooth curves
 
-            // Animate cards sequentially
-            cards.forEach((card, i) => {
-                if (i < cards.length - 1) {
-                    const nextCard = cards[i + 1];
+        // Initial states: first image full size, others hidden
+        cards.forEach((card, i) => {
+            const img = card.querySelector('.artwork-image-container');
+            gsap.set(img, {
+                scale: i === 0 ? 1 : 0,
+                opacity: 1,
+                zIndex: cards.length - i
+            });
+        });
 
-                    tl.to(card, {
-                        yPercent: -100, // Move current card up and out of view
-                        opacity: 0.5, // Fade it out
-                        ease: 'power2.inOut',
-                        duration: 1
-                    })
-                    .to(nextCard, {
-                        yPercent: 0, // Move next card into view
-                        opacity: 1, // Fade it in
-                        ease: 'power2.inOut',
-                        duration: 1
-                    }, '<'); // Start this animation at the same time as the previous one
-                }
-            });
-        } else {
-            // Desktop GSAP Stacked Scroll Animation (Scale)
-            gsap.set(cards, {
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                xPercent: -50,
-                yPercent: -50,
-                transformOrigin: 'center center',
-            });
-
-            // Set initial state
-            cards.forEach((card, i) => {
-                gsap.set(card, {
-                    zIndex: cards.length - i,
-                    scale: i === 0 ? 1 : 0.8,
-                    opacity: i === 0 ? 1 : 0,
-                });
-            });
-
-            const tl = gsap.timeline({
-                scrollTrigger: {
-                    trigger: container,
-                    start: 'top top',
-                    end: `+=${(cards.length) * 500}`,
-                    pin: true,
-                    scrub: 1,
-                    anticipatePin: 1,
-                    invalidateOnRefresh: true
-                }
-            });
-
-            cards.forEach((card, i) => {
-                if (i < cards.length - 1) {
-                    const nextCard = cards[i + 1];
-                    tl.to(card, {
-                        scale: 0.8,
-                        opacity: 0,
-                        ease: 'sine.inOut',
-                        duration: 1
-                    })
-                    .to(nextCard, {
-                        scale: 1,
-                        opacity: 1,
-                        ease: 'sine.inOut',
-                        duration: 1
-                    }, '<');
-                }
-            });
+        // Optional custom bell curve ease
+        if (gsap.registerEase) {
+            gsap.registerEase("bellCurve", p => Math.sin(p * Math.PI));
         }
+
+        const tl = gsap.timeline({
+            scrollTrigger: {
+                trigger: container,
+                start: 'top top',
+                end: `+=${scrollDistance}`,
+                pin: true,
+                scrub: isMobile ? 0.1 : 0.3,
+                anticipatePin: 1,
+                markers: false,
+                onLeave: () => { stackedView.style.display = 'none'; },
+                onEnterBack: () => { stackedView.style.display = 'block'; }
+            }
+        });
+
+        // Clear existing timeline tweens and rebuild sequentially
+        tl.clear();
+        cards.forEach((card, i) => {
+            if (i < cards.length - 1) {
+                const currImg = card.querySelector('.artwork-image-container');
+                const nextImg = cards[i + 1].querySelector('.artwork-image-container');
+                const seg = 3;
+
+                tl.to(currImg, { scale: 0.8, duration: seg * 0.3, ease: 'power1.in' })
+                  .to(currImg, { scale: 0.1, duration: seg * 0.4, ease: 'power3.inOut' })
+                  .to(currImg, { scale: 0,   duration: seg * 0.3, ease: 'power1.out' })
+                  .set(nextImg, { scale: 0 })
+                  .to(nextImg, { scale: 0.2, duration: seg * 0.3, ease: 'power1.in' })
+                  .to(nextImg, { scale: 0.9, duration: seg * 0.4, ease: 'power3.inOut' })
+                  .to(nextImg, { scale: 1,   duration: seg * 0.3, ease: 'power1.out' });
+            }
+        });
     }
 });
