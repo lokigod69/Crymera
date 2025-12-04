@@ -134,19 +134,24 @@ function flipImage(direction) {
     const frontImage = flipContent.querySelector('.flip-front img');
     const backImage = flipContent.querySelector('.flip-back img');
 
-    // Determine which face is visible and update the hidden one
-    const isFrontVisible = Math.round(gsap.getProperty(flipContent, "rotationY") / 180) % 2 === 0;
+    // Determine which face is currently visible
+    // We use the currentRotation variable which tracks the target rotation
+    // This is more reliable than reading the current GSAP value which might be mid-animation (though we check isFlipping)
+    const currentRotationNormalized = currentRotation % 360;
+    const isFrontVisible = currentRotationNormalized === 0 || currentRotationNormalized === 360 || currentRotationNormalized === -360;
 
+    // If front is visible, we want to put the NEW image on the BACK
+    // If back is visible, we want to put the NEW image on the FRONT
     if (isFrontVisible) {
         backImage.src = flipImages[nextIndex];
     } else {
         frontImage.src = flipImages[nextIndex];
     }
 
-    const targetRotation = currentRotation + 180 * direction;
+    const targetRotation = currentRotation + (direction * 180);
 
     gsap.to(flipContent, {
-        duration: 1.2, // Slower animation
+        duration: 0.8,
         rotationY: targetRotation,
         ease: "power2.inOut",
         onComplete: () => {
@@ -154,12 +159,17 @@ function flipImage(direction) {
             currentFlipIndex = nextIndex;
             isFlipping = false;
 
-            // After the flip, the back becomes the new front
-            // To simplify, we can just update the src of both images
-            // so the next flip is always from the correct state.
+            // Sync both images to the current one to prevent flickering if we flip again quickly
+            // and to ensure the "hidden" side is ready for the next flip (which will put the NEXT image on it)
+            // Actually, we don't strictly need to update the hidden one yet, but it keeps state clean.
+            // The critical part is that the VISIBLE one is now correct.
             if (isFrontVisible) {
-                frontImage.src = flipImages[nextIndex];
+                // We just flipped to BACK. Back is visible.
+                // Front is hidden.
+                frontImage.src = flipImages[nextIndex]; 
             } else {
+                // We just flipped to FRONT. Front is visible.
+                // Back is hidden.
                 backImage.src = flipImages[nextIndex];
             }
         }
