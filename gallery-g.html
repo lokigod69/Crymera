@@ -1,21 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gallery G | CrymEra</title>
-    <link rel="icon" type="image/png" href="../logo.png">
-    <link rel="apple-touch-icon" href="../logo.png">
-    <link rel="stylesheet" href="../css/gallery-page.css">
-    <link rel="stylesheet" href="../css/gallery-g.css">
-    <link rel="stylesheet" href="../css/gallery-flip.css">
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="apple-touch-icon" href="logo.png">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/gallery-g.css">
+    <link rel="stylesheet" href="css/gallery-flip.css">
 </head>
+
 <body>
 
     <header class="main-header">
         <div class="banner">
             <div class="logo">
-                <a href="../index.html">
+                <a href="index.html">
                     <span class="logo-main">CrymEra</span>
                     <span class="logo-sub">Photography</span>
                 </a>
@@ -24,7 +26,7 @@
     </header>
 
     <nav class="home-separator">
-        <a href="../index.html">Home</a>
+        <a href="index.html">Home</a>
     </nav>
 
     <main>
@@ -34,7 +36,7 @@
         </section>
 
         <section class="gallery-grid-container">
-            <div class="gallery-grid gallery-grid-a">
+            <div class="artwork-grid gallery-grid-g">
                 <!-- Images will be loaded here by gallery-loader.js -->
             </div>
         </section>
@@ -67,21 +69,23 @@
         </div>
     </footer>
 
-    <script src="../js/gallery-loader.js"></script>
-    <script src="../js/gallery-flip.js"></script>
+    <script src="js/gallery-loader.js"></script>
+    <script src="js/gallery-flip.js"></script>
+    <script src="js/view-switcher.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const images = [
-                { src: '../assets/g1a.png', title: 'G1A', orientation: 'landscape' },
-                { src: '../assets/g1b.png', title: 'G1B', orientation: 'portrait' },
-                { src: '../assets/g1c.png', title: 'G1C', orientation: 'landscape' },
-                { src: '../assets/g1d.png', title: 'G1D', orientation: 'portrait' },
-                { src: '../assets/g1e.png', title: 'G1E', orientation: 'landscape' },
-                { src: '../assets/g1f.png', title: 'G1F', orientation: 'portrait' },
+                { src: 'assets/g1a.png', title: 'G1A', orientation: 'landscape' },
+                { src: 'assets/g1b.png', title: 'G1B', orientation: 'portrait' },
+                { src: 'assets/g1c.png', title: 'G1C', orientation: 'landscape' },
+                { src: 'assets/g1d.png', title: 'G1D', orientation: 'portrait' },
+                { src: 'assets/g1e.png', title: 'G1E', orientation: 'landscape' },
+                { src: 'assets/g1f.png', title: 'G1F', orientation: 'portrait' },
             ];
             const grid = document.querySelector('.gallery-grid');
             loadImages(grid, images);
         });
     </script>
 </body>
+
 </html>

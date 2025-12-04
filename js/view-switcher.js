@@ -7,6 +7,9 @@ function initViewSwitcher() {
     const galleryGrid = document.querySelector('.artwork-grid');
     if (!galleryGrid) return;
 
+    // Prevent duplicate initialization
+    if (document.querySelector('.view-mode-controls')) return;
+
     // Inject CSS
     const link = document.createElement('link');
     link.rel = 'stylesheet';
@@ -50,12 +53,12 @@ function initViewSwitcher() {
         document.body.appendChild(container);
     });
 
-    // Collect Images
-    const images = Array.from(document.querySelectorAll('.artwork-card img')).map(img => img.src);
-
     // Event Listeners
     controls.addEventListener('click', (e) => {
         if (e.target.classList.contains('view-mode-btn')) {
+            // Collect Images dynamically on click to support lazy loading
+            const images = Array.from(document.querySelectorAll('.artwork-card img')).map(img => img.src);
+
             const mode = e.target.dataset.mode;
             switchMode(mode, images);
 

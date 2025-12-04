@@ -1,3 +1,13 @@
+.view-mode-controls {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    display: flex;
+    background: rgba(20, 20, 20, 0.6);
+    backdrop-filter: blur(10px);
+    border-radius: 30px;
     border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -7,305 +17,305 @@
     overflow: hidden;
     justify-content: center;
     align-items: center;
-    }
+}
 
-    .view-mode-controls:hover {
-        width: auto;
-        /* Expand to fit content */
-        padding: 10px 20px;
-        background: rgba(10, 10, 10, 0.85);
-        border-color: rgba(255, 255, 255, 0.2);
-    }
+.view-mode-controls:hover {
+    width: auto;
+    /* Expand to fit content */
+    padding: 10px 20px;
+    background: rgba(10, 10, 10, 0.85);
+    border-color: rgba(255, 255, 255, 0.2);
+}
 
-    /* The Menu Icon (Visible when collapsed) */
-    .view-mode-menu-icon {
-        position: absolute;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: 100%;
-        height: 100%;
-        color: rgba(255, 255, 255, 0.8);
-        font-size: 24px;
-        transition: opacity 0.3s ease;
-        pointer-events: none;
-    }
+/* The Menu Icon (Visible when collapsed) */
+.view-mode-menu-icon {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 24px;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
 
-    .view-mode-controls:hover .view-mode-menu-icon {
-        opacity: 0;
-    }
+.view-mode-controls:hover .view-mode-menu-icon {
+    opacity: 0;
+}
 
-    /* Buttons Container */
-    .view-mode-buttons {
-        display: flex;
-        gap: 10px;
-        opacity: 0;
-        transform: translateX(20px);
-        transition: all 0.3s ease;
-        pointer-events: none;
-        /* Disable interaction when hidden */
-    }
+/* Buttons Container */
+.view-mode-buttons {
+    display: flex;
+    gap: 10px;
+    opacity: 0;
+    transform: translateX(20px);
+    transition: all 0.3s ease;
+    pointer-events: none;
+    /* Disable interaction when hidden */
+}
 
-    .view-mode-controls:hover .view-mode-buttons {
-        opacity: 1;
-        transform: translateX(0);
-        pointer-events: auto;
-    }
+.view-mode-controls:hover .view-mode-buttons {
+    opacity: 1;
+    transform: translateX(0);
+    pointer-events: auto;
+}
 
-    .view-mode-btn {
-        background: transparent;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        color: rgba(255, 255, 255, 0.6);
-        padding: 8px 16px;
-        border-radius: 20px;
-        cursor: pointer;
-        font-family: 'Orbitron', sans-serif;
-        font-size: 0.85rem;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        transition: all 0.2s ease;
-        white-space: nowrap;
-    }
+.view-mode-btn {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.6);
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
 
-    .view-mode-btn:hover {
-        background: rgba(255, 255, 255, 0.15);
-        color: #fff;
-        border-color: rgba(255, 255, 255, 0.4);
-        transform: translateY(-2px);
-    }
+.view-mode-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: translateY(-2px);
+}
 
-    .view-mode-btn.active {
-        background: #fff;
-        color: #000;
-        border-color: #fff;
-        box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
-        font-weight: bold;
-    }
+.view-mode-btn.active {
+    background: #fff;
+    color: #000;
+    border-color: #fff;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+    font-weight: bold;
+}
 
-    /* Container for all modes */
-    .gallery-mode-container {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100vh;
-        z-index: 100;
-        display: none;
-        opacity: 0;
-        transition: opacity 0.5s ease;
-        overflow: hidden;
-    }
+/* Container for all modes */
+.gallery-mode-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    z-index: 100;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    overflow: hidden;
+}
 
-    .gallery-mode-container.active {
-        display: block;
-        opacity: 1;
-    }
+.gallery-mode-container.active {
+    display: block;
+    opacity: 1;
+}
 
-    /* Spiral Mode */
-    #spiral-container {
-        perspective: 1000px;
-        background: radial-gradient(circle at center, #1a1a1a 0%, #000 100%);
-    }
+/* Spiral Mode */
+#spiral-container {
+    perspective: 1000px;
+    background: radial-gradient(circle at center, #1a1a1a 0%, #000 100%);
+}
 
-    .spiral-stage {
-        width: 100%;
-        height: 100%;
-        transform-style: preserve-3d;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
+.spiral-stage {
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 
-    .spiral-item {
-        position: absolute;
-        width: 200px;
-        height: 300px;
-        background-size: cover;
-        background-position: center;
-        border: 2px solid rgba(255, 255, 255, 0.1);
-        box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-        transition: transform 0.3s ease, filter 0.3s ease;
-        cursor: pointer;
-    }
+.spiral-item {
+    position: absolute;
+    width: 200px;
+    height: 300px;
+    background-size: cover;
+    background-position: center;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    transition: transform 0.3s ease, filter 0.3s ease;
+    cursor: pointer;
+}
 
-    .spiral-item:hover {
-        border-color: #0ff;
-        box-shadow: 0 0 30px #0ff;
-        filter: brightness(1.2);
-    }
+.spiral-item:hover {
+    border-color: #0ff;
+    box-shadow: 0 0 30px #0ff;
+    filter: brightness(1.2);
+}
 
-    /* Scatter Mode */
-    #scatter-container {
-        background: #050505;
-        cursor: default;
-        touch-action: none;
-    }
+/* Scatter Mode */
+#scatter-container {
+    background: #050505;
+    cursor: default;
+    touch-action: none;
+}
 
-    .scatter-item {
-        position: absolute;
-        width: 180px;
-        padding: 10px 10px 40px 10px;
-        background: #fff;
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
-        transform-origin: center;
-        cursor: grab;
-        will-change: transform;
-    }
+.scatter-item {
+    position: absolute;
+    width: 180px;
+    padding: 10px 10px 40px 10px;
+    background: #fff;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    transform-origin: center;
+    cursor: grab;
+    will-change: transform;
+}
 
-    .scatter-item:active {
-        cursor: grabbing;
-    }
+.scatter-item:active {
+    cursor: grabbing;
+}
 
-    .scatter-item img {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        cursor: grab;
-    }
+.scatter-item img {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: grab;
+}
 
-    #cube-container:active {
-        cursor: grabbing;
-    }
+#cube-container:active {
+    cursor: grabbing;
+}
 
-    .cube-wrapper {
-        width: 600px;
-        height: 600px;
-        position: relative;
-        transform-style: preserve-3d;
-        transition: transform 0.1s linear;
-    }
+.cube-wrapper {
+    width: 600px;
+    height: 600px;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.1s linear;
+}
 
-    .cube-face {
-        position: absolute;
-        width: 600px;
-        height: 600px;
-        background: rgba(255, 255, 255, 0.05);
-        border: 2px solid rgba(255, 255, 255, 0.1);
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        grid-template-rows: repeat(2, 1fr);
-        gap: 10px;
-        padding: 10px;
-        backface-visibility: hidden;
-    }
+.cube-face {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 10px;
+    padding: 10px;
+    backface-visibility: hidden;
+}
 
-    .cube-face-item {
-        width: 100%;
-        height: 100%;
-        background-size: cover;
-        background-position: center;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        transition: transform 0.3s ease;
-        cursor: pointer;
-    }
+.cube-face-item {
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: transform 0.3s ease;
+    cursor: pointer;
+}
 
-    .cube-face-item:hover {
-        transform: scale(1.05);
-        border-color: #fff;
-        z-index: 10;
-    }
+.cube-face-item:hover {
+    transform: scale(1.05);
+    border-color: #fff;
+    z-index: 10;
+}
 
-    /* Sphere Mode */
-    #sphere-container {
-        perspective: 1500px;
-        background: radial-gradient(circle at center, #111 0%, #000 100%);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        cursor: grab;
-        overflow: hidden;
-    }
+/* Sphere Mode */
+#sphere-container {
+    perspective: 1500px;
+    background: radial-gradient(circle at center, #111 0%, #000 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: grab;
+    overflow: hidden;
+}
 
-    #sphere-container:active {
-        cursor: grabbing;
-    }
+#sphere-container:active {
+    cursor: grabbing;
+}
 
-    .sphere-stage {
-        width: 0;
-        height: 0;
-        position: relative;
-        transform-style: preserve-3d;
-    }
+.sphere-stage {
+    width: 0;
+    height: 0;
+    position: relative;
+    transform-style: preserve-3d;
+}
 
-    .sphere-item {
-        position: absolute;
-        width: 120px;
-        height: 120px;
-        background-size: cover;
-        background-position: center;
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        border-radius: 10px;
-        backface-visibility: hidden;
-        box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
-        cursor: pointer;
-        transition: box-shadow 0.3s ease, border-color 0.3s ease;
-    }
+.sphere-item {
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    background-size: cover;
+    background-position: center;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+    backface-visibility: hidden;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+    transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
 
-    .sphere-item:hover {
-        border-color: #0ff;
-        box-shadow: 0 0 20px #0ff;
-    }
+.sphere-item:hover {
+    border-color: #0ff;
+    box-shadow: 0 0 20px #0ff;
+}
 
-    /* Vortex Mode */
-    #vortex-container {
-        perspective: 1000px;
-        background: #000;
-        overflow: hidden;
-    }
+/* Vortex Mode */
+#vortex-container {
+    perspective: 1000px;
+    background: #000;
+    overflow: hidden;
+}
 
-    .vortex-stage {
-        width: 100%;
-        height: 100%;
-        transform-style: preserve-3d;
-        position: absolute;
-        top: 0;
-        left: 0;
-    }
+.vortex-stage {
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
 
-    .vortex-item {
-        position: absolute;
-        width: 300px;
-        height: 200px;
-        background-size: cover;
-        background-position: center;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        box-shadow: 0 0 30px rgba(0, 255, 255, 0.1);
-        opacity: 0;
-        /* Fade in as they approach */
-    }
+.vortex-item {
+    position: absolute;
+    width: 300px;
+    height: 200px;
+    background-size: cover;
+    background-position: center;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.1);
+    opacity: 0;
+    /* Fade in as they approach */
+}
 
-    /* Network Mode */
-    #network-container {
-        perspective: 1000px;
-        background: linear-gradient(to bottom, #050505, #000);
-        overflow: hidden;
-    }
+/* Network Mode */
+#network-container {
+    perspective: 1000px;
+    background: linear-gradient(to bottom, #050505, #000);
+    overflow: hidden;
+}
 
-    .network-stage {
-        width: 100%;
-        height: 100%;
-        transform-style: preserve-3d;
-        position: absolute;
-        top: 0;
-        left: 0;
-    }
+.network-stage {
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
 
-    .network-item {
-        position: absolute;
-        width: 100px;
-        height: 100px;
-        background-size: cover;
-        background-position: center;
-        border-radius: 50%;
-        border: 2px solid rgba(255, 255, 255, 0.1);
-        box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
-        cursor: pointer;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
+.network-item {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    background-size: cover;
+    background-position: center;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
 
-    .network-item:hover {
-        transform: scale(1.5);
-        box-shadow: 0 0 30px #0ff;
-        z-index: 100;
-        border-color: #fff;
-    }
+.network-item:hover {
+    transform: scale(1.5);
+    box-shadow: 0 0 30px #0ff;
+    z-index: 100;
+    border-color: #fff;
+}
