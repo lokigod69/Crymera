@@ -103,30 +103,145 @@ function initSpiralMode(images) {
     const stage = document.querySelector('.spiral-stage');
     if (stage.children.length > 0) return;
 
+    let currentScroll = 0;
+
     images.forEach((src, i) => {
         const div = document.createElement('div');
         div.className = 'spiral-item';
         div.style.backgroundImage = `url(${src})`;
         stage.appendChild(div);
 
-        const theta = i * 45;
-        const radius = 500;
-        const y = (i - images.length / 2) * 150;
+        const theta = i * 30; // 30 degrees per item
+        const radius = 600;
+        const y = i * 200; // Vertical spacing
 
         gsap.set(div, {
             rotationY: -theta,
             transformOrigin: `50% 50% ${radius}px`,
             z: -radius,
-            x: 0,
-            y: y
+            y: y,
+            x: 0
         });
+    });
+
+    // Center initial view
+    gsap.set(stage, {
+        y: window.innerHeight / 2 - 150, // Center vertically roughly
+        z: 0
     });
 
     window.addEventListener('wheel', (e) => {
         if (!document.getElementById('spiral-container').classList.contains('active')) return;
 
-        const delta = e.deltaY;
-        gsap.to('.spiral-stage', {
+        currentScroll -= e.deltaY;
+
+        // Animate the stage to rotate and move up/down
+        // We want to rotate so the items come to the front
+        // 30 degrees per item, 200px height per item
+        // So 200px scroll = 30 degrees rotation
+
+        const rotation = (currentScroll / 200) * 30;
+        const yPos = (window.innerHeight / 2 - 150) + currentScroll;
+
+        gsap.to(stage, {
+            rotationY: rotation,
+            y: yPos,
+            duration: 1,
+            ease: 'power2.out'
+        });
+    });
+}
+
+// --- Scatter Mode Logic ---
+function initScatterMode(images) {
+    const container = document.getElementById('scatter-container');
+    if (container.children.length > 0) return;
+
+    images.forEach((src, i) => {
+        const div = document.createElement('div');
+        div.className = 'scatter-item';
+        div.innerHTML = `<img src="${src}" alt="Scatter Image" style="width:100%; height:auto; pointer-events:none;">`;
+        container.appendChild(div);
+
+        // Random position on screen
+        const x = Math.random() * (window.innerWidth - 200);
+        const y = Math.random() * (window.innerHeight - 200);
+        const rotation = (Math.random() - 0.5) * 40;
+
+        gsap.set(div, {
+            x: x,
+            y: y,
+            rotation: rotation
+        });
+
+        // Draggable
+        Draggable.create(div, {
+            type: "x,y",
+            bounds: container,
+            inertia: true,
+            onDragStart: function () {
+                gsap.to(this.target, { scale: 1.1, zIndex: 100, duration: 0.2 });
+            },
+            onDragEnd: function () {
+                gsap.to(this.target, { scale: 1, zIndex: 1, duration: 0.2 });
+            }
+        });
+
+        // Click to bring to front
+        div.addEventListener('mousedown', () => {
+            gsap.to(div, { zIndex: 100 });
+        });
+    });
+}
+
+// --- Ribbon Mode Logic ---
+function initRibbonMode(images) {
+    const stage = document.querySelector('.ribbon-stage');
+    if (stage.children.length > 0) return;
+
+    let scrollX = 0;
+
+    images.forEach((src, i) => {
+        const div = document.createElement('div');
+        div.className = 'ribbon-item'; // Need to ensure CSS exists or use inline styles
+        div.style.cssText = `
+            position: absolute;
+            width: 300px;
+            height: 200px;
+            background-image: url(${src});
+            background-size: cover;
+            background-position: center;
+            border: 2px solid rgba(255,255,255,0.2);
+        `;
+        stage.appendChild(div);
+
+        // Sine wave path
+        const x = i * 350;
+        const y = Math.sin(i * 0.5) * 300;
+        const z = Math.cos(i * 0.5) * 300;
+        const rotationY = Math.cos(i * 0.5) * 45;
+
+        gsap.set(div, {
+            x: x,
+            y: y,
+            z: z,
+            rotationY: rotationY
+        });
+    });
+
+    gsap.set(stage, {
+        x: window.innerWidth / 2 - 150,
+        y: window.innerHeight / 2 - 100,
+        transformStyle: "preserve-3d"
+    });
+
+    window.addEventListener('wheel', (e) => {
+        if (!document.getElementById('ribbon-container').classList.contains('active')) return;
+
+        scrollX -= e.deltaY;
+
+        gsap.to(stage, {
+            x: (window.innerWidth / 2 - 150) + scrollX,
             duration: 1,
             ease: 'power2.out'
         });
@@ -298,89 +413,94 @@ function initSphereMode(images) {
 }
 
 // --- Vortex Mode Logic (Fixed) ---
+// --- Vortex Mode Logic (Infinite) ---
 function initVortexMode(images) {
     const stage = document.querySelector('.vortex-stage');
     if (stage.children.length > 0) return;
 
-    const spacing = 500; // Distance between images in Z
-    const radius = 400; // Spiral radius
-    const totalDepth = images.length * spacing;
+    const spacing = 800; // More spacing
+    const radius = 500;
+    const totalItems = images.length;
 
+    // Create items
     images.forEach((src, i) => {
         const div = document.createElement('div');
         div.className = 'vortex-item';
         div.style.backgroundImage = `url(${src})`;
+        // Store initial index for calculation
+        div.dataset.index = i;
         stage.appendChild(div);
-
-        const angle = i * 0.8; // Spiral angle
-        const x = Math.cos(angle) * radius;
-        const y = Math.sin(angle) * radius;
-        const z = -i * spacing; // Go deep into screen
-
-        gsap.set(div, {
-            x: x,
-            y: y,
-            z: z,
-            rotationZ: angle * (180 / Math.PI), // Rotate to follow spiral
-            opacity: 0 // Start hidden
-        });
     });
 
-    // Initial Camera Position
-    // We start at z = 1000 (camera is at 0, so we pull stage to 1000 to see the first items at 0, -500, etc)
-    let scrollZ = 1000;
+    let scrollZ = 0;
 
-    gsap.set(stage, {
-        z: scrollZ,
-        x: window.innerWidth / 2 - 150,
-        y: window.innerHeight / 2 - 100
-    });
-
-    // Update visibility initially
-    updateVortexVisibility(scrollZ);
+    // Initial render
+    updateVortex(0);
 
     window.addEventListener('wheel', (e) => {
         if (!document.getElementById('vortex-container').classList.contains('active')) return;
 
-        // Scroll forward (fly into screen) -> increase stage Z
+        // Move forward
         scrollZ += e.deltaY * 2;
 
-        // Clamp to prevent going too far back
-        if (scrollZ < 1000) scrollZ = 1000;
-
         gsap.to(stage, {
-            z: scrollZ,
-            rotationZ: scrollZ * 0.1, // Spin effect
+            rotationZ: scrollZ * 0.05, // Gentle spin
             duration: 0.5,
             ease: 'power1.out',
-            onUpdate: () => updateVortexVisibility(scrollZ)
+            onUpdate: () => updateVortex(scrollZ)
         });
     });
 
-    function updateVortexVisibility(currentZ) {
+    function updateVortex(currentZ) {
         const items = document.querySelectorAll('.vortex-item');
+        const loopLength = totalItems * spacing;
+
         items.forEach(item => {
-            const itemZ = gsap.getProperty(item, "z");
-            const distToCamera = itemZ + currentZ; // Camera is at 0
+            const i = parseInt(item.dataset.index);
 
-            // Visible range: -500 (just passed) to 2000 (far ahead)
-            let opacity = 0;
-            if (distToCamera > -500 && distToCamera < 2000) {
-                // Fade in from distance
-                opacity = 1 - (distToCamera / 2000);
-                // Fade out quickly when passing camera
-                if (distToCamera < 200) opacity = (distToCamera + 500) / 700;
+            // Calculate Z position based on scroll
+            // We want items to loop. 
+            // Base Z is -i * spacing.
+            // Add currentZ.
+            let itemZ = (-i * spacing) + currentZ;
+
+            // Wrap around logic
+            // If itemZ is > 500 (behind camera), move it to the far back
+            while (itemZ > 500) {
+                itemZ -= loopLength;
             }
-            // Clamp
-            if (opacity < 0) opacity = 0;
-            if (opacity > 1) opacity = 1;
+            // If itemZ is too far back (optional, for reverse scroll), move to front
+            while (itemZ < -loopLength + 500) {
+                itemZ += loopLength;
+            }
 
-            gsap.set(item, { opacity: opacity });
+            const angle = i * 0.5; // Spiral angle
+            const x = Math.cos(angle) * radius;
+            const y = Math.sin(angle) * radius;
+
+            // Opacity fade
+            let opacity = 1;
+            if (itemZ > 0) opacity = 1 - (itemZ / 500); // Fade out as it passes camera
+            if (itemZ < -3000) opacity = 1 - ((-itemZ - 3000) / 2000); // Fade out in distance
+
+            gsap.set(item, {
+                x: x,
+                y: y,
+                z: itemZ,
+                rotationZ: angle * (180 / Math.PI),
+                opacity: opacity
+            });
         });
     }
+
+    // Center stage
+    gsap.set(stage, {
+        x: window.innerWidth / 2 - 150,
+        y: window.innerHeight / 2 - 100
+    });
 }
 
-// --- Network Mode Logic (Fixed) ---
+// --- Network Mode Logic (Parallax) ---
 function initNetworkMode(images) {
     const stage = document.querySelector('.network-stage');
     if (stage.children.length > 0) return;
@@ -391,17 +511,17 @@ function initNetworkMode(images) {
         div.style.backgroundImage = `url(${src})`;
         stage.appendChild(div);
 
-        // Random 3D Cloud but constrained
-        const range = 600;
+        // Random 3D Cloud
+        const range = 800;
         const x = (Math.random() - 0.5) * range * 2;
         const y = (Math.random() - 0.5) * range * 1.5;
-        const z = (Math.random() - 0.5) * range;
+        const z = (Math.random() - 0.5) * range * 2;
 
         gsap.set(div, {
             x: x,
             y: y,
             z: z,
-            scale: 0 // Start small
+            scale: 0
         });
 
         // Pop in
@@ -412,18 +532,17 @@ function initNetworkMode(images) {
             ease: "back.out(1.7)"
         });
 
-        // Floating Animation
+        // Floating
         gsap.to(div, {
-            y: `+=${Math.random() * 60 - 30}`,
-            x: `+=${Math.random() * 60 - 30}`,
+            y: `+=${Math.random() * 100 - 50}`,
             rotation: Math.random() * 20 - 10,
-            duration: 3 + Math.random() * 3,
+            duration: 4 + Math.random() * 4,
             repeat: -1,
             yoyo: true,
             ease: 'sine.inOut'
         });
 
-        // Hover to expand
+        // Hover
         div.addEventListener('mouseenter', () => {
             gsap.to(div, { scale: 2, zIndex: 100, duration: 0.3 });
         });
@@ -438,32 +557,35 @@ function initNetworkMode(images) {
         y: window.innerHeight / 2
     });
 
-    // Draggable Network (Rotate the cloud)
-    let rotationX = 0;
-    let rotationY = 0;
+    // Mouse Parallax instead of Drag
+    window.addEventListener('mousemove', (e) => {
+        if (!document.getElementById('network-container').classList.contains('active')) return;
 
-    Draggable.create(document.createElement('div'), {
-        trigger: document.getElementById('network-container'),
-        type: "x,y",
-        inertia: true,
-        onDrag: function () {
-            rotationY += this.deltaX * 0.3;
-            rotationX -= this.deltaY * 0.3;
+        const mouseX = (e.clientX / window.innerWidth - 0.5) * 2; // -1 to 1
+        const mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
 
-            gsap.to(stage, {
-                rotationY: rotationY,
-                rotationX: rotationX,
-                duration: 0.1,
-                ease: 'none'
-            });
-        },
-        onThrowUpdate: function () {
-            rotationY += this.deltaX * 0.3;
-            rotationX -= this.deltaY * 0.3;
-            gsap.set(stage, {
-                rotationY: rotationY,
-                rotationX: rotationX
-            });
-        }
+        gsap.to(stage, {
+            rotationY: mouseX * 20, // Rotate slightly based on mouse
+            rotationX: -mouseY * 20,
+            duration: 1,
+            ease: 'power2.out'
+        });
+    });
+
+    // Zoom on scroll
+    let zoomLevel = 0;
+    window.addEventListener('wheel', (e) => {
+        if (!document.getElementById('network-container').classList.contains('active')) return;
+
+        zoomLevel -= e.deltaY;
+        // Clamp zoom
+        if (zoomLevel > 1000) zoomLevel = 1000;
+        if (zoomLevel < -2000) zoomLevel = -2000;
+
+        gsap.to(stage, {
+            z: zoomLevel,
+            duration: 1,
+            ease: 'power2.out'
+        });
     });
 }
