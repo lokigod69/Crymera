@@ -19,16 +19,17 @@ class SpiralEffect {
 
         // Enhanced Configuration
         this.config = {
-            radius: 700,            // Distance from center to images
-            angleStep: 50,          // Degrees between items (for nice spiral spread)
-            heightStep: 350,        // Vertical distance between items (elongated)
-            perspective: 1800,      // Camera perspective for depth
-            itemWidth: 400,         // Image width
-            itemHeight: 320,        // Image height
+            radius: 450,            // Distance from center to images (reduced to see full spiral)
+            angleStep: 40,          // Degrees between items (tighter spiral)
+            heightStep: 200,        // Vertical distance between items
+            perspective: 1200,      // Camera perspective for depth
+            cameraDistance: 900,    // How far back the camera sits from the spiral center
+            itemWidth: 380,         // Image width
+            itemHeight: 280,        // Image height
             scrollSensitivity: 0.004, // Scroll speed
             snapThreshold: 0.08,    // When to snap to nearest image
             animationEase: 0.12,    // Smooth animation factor
-            focusScale: 1.15,       // Scale of focused image
+            focusScale: 1.2,        // Scale of focused image
             focusGlow: 'rgba(0, 255, 255, 0.8)', // Glow color for focused image
         };
 
@@ -57,7 +58,22 @@ class SpiralEffect {
         this.container.style.overflow = 'hidden';
         console.log('[SpiralEffect] Container perspective set');
 
-        // Create Cylinder (The World rotating around user)
+        // Create Stage (positions camera back from spiral)
+        this.stage = document.createElement('div');
+        this.stage.className = 'spiral-stage';
+        Object.assign(this.stage.style, {
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+            transformStyle: 'preserve-3d',
+            top: '0',
+            left: '0',
+            // Push the entire scene back so we can see the full spiral
+            transform: `translateZ(-${this.config.cameraDistance}px)`
+        });
+        this.container.appendChild(this.stage);
+
+        // Create Cylinder (The spiral that rotates around vertical axis)
         this.cylinder = document.createElement('div');
         this.cylinder.className = 'spiral-cylinder';
         Object.assign(this.cylinder.style, {
@@ -69,7 +85,7 @@ class SpiralEffect {
             left: '0',
             transition: 'none'
         });
-        this.container.appendChild(this.cylinder);
+        this.stage.appendChild(this.cylinder);
 
         // Create Items on the helix
         this.images.forEach((src, i) => {
@@ -239,11 +255,11 @@ class SpiralEffect {
             const dist = Math.abs(item.index - this.scrollProgress);
             const isFocused = dist < 0.5;
 
-            // Calculate opacity based on angular distance
-            // Items more than ~2.5 turns away fade out
+            // Calculate opacity based on distance from focus
+            // Items further away fade out gracefully
             let opacity = 1;
-            if (dist > 3) {
-                opacity = Math.max(0, 1 - (dist - 3) / 1.5);
+            if (dist > 2) {
+                opacity = Math.max(0.2, 1 - (dist - 2) / 3);
             }
 
             // Scale effect for focused item
@@ -255,21 +271,23 @@ class SpiralEffect {
             // Apply styles
             item.el.style.opacity = opacity;
 
-            // Focus effects
+            // Focus effects - bring the focused item forward to the center
             if (isFocused) {
-                item.el.style.boxShadow = `0 0 50px ${this.config.focusGlow}, 0 20px 60px rgba(0, 0, 0, 0.8)`;
+                // Focused image: bring it forward to exactly face the viewer
+                // translateZ brings it toward camera, out of the spiral
+                const forwardZ = this.config.cameraDistance - 100; // Come forward almost to camera position
+
+                item.el.style.boxShadow = `0 0 60px ${this.config.focusGlow}, 0 25px 80px rgba(0, 0, 0, 0.9)`;
                 item.el.style.borderColor = this.config.focusGlow;
                 item.el.style.transform = `
-                    translateY(${item.y}px)
-                    rotateY(${item.theta}deg)
-                    translateZ(${this.config.radius}px)
-                    rotateY(180deg)
+                    translateZ(${forwardZ}px)
                     scale(${scale})
                 `;
                 item.el.style.zIndex = '100';
                 item.el.style.pointerEvents = 'auto';
                 item.el.classList.add('focused');
             } else {
+                // Non-focused: stay in the spiral helix position
                 item.el.style.boxShadow = '0 15px 40px rgba(0, 0, 0, 0.6)';
                 item.el.style.borderColor = 'rgba(255, 255, 255, 0.15)';
                 item.el.style.transform = `
@@ -434,6 +452,10 @@ class SpiralEffect {
 
         if (this.snapTimeout) {
             clearTimeout(this.snapTimeout);
+        }
+
+        if (this.stage) {
+            this.stage.remove();
         }
 
         if (this.cylinder) {
