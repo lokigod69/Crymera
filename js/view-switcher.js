@@ -2,6 +2,9 @@ document.addEventListener('DOMContentLoaded', () => {
     initViewSwitcher();
 });
 
+let currentEffectInstance = null;
+
+
 function initViewSwitcher() {
     // Check if we are on a gallery page
     const galleryGrid = document.querySelector('.artwork-grid');
@@ -72,8 +75,23 @@ function initViewSwitcher() {
 function switchMode(mode, images) {
     const mainSection = document.querySelector('.featured-artworks');
 
+    // Cleanup previous active effect if it exists
+    if (currentEffectInstance) {
+        if (typeof currentEffectInstance.destroy === 'function') {
+            currentEffectInstance.destroy();
+        }
+        currentEffectInstance = null;
+    }
+
     // Hide all containers
-    document.querySelectorAll('.gallery-mode-container').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.gallery-mode-container').forEach(el => {
+        el.classList.remove('active');
+        // Optional: clear container content if not managed by class?
+        // For legacy effects (scatter etc), they append children. 
+        // We might need to clear them if we want a fresh start, 
+        // but the legacy code checks if(children.length > 0) return.
+        // So we leave them for now unless they are refactored.
+    });
 
     // Reset Main Section
     if (mainSection) mainSection.style.display = 'none';
@@ -87,70 +105,31 @@ function switchMode(mode, images) {
         if (container) {
             container.classList.add('active');
 
-            if (mode === 'spiral') initSpiralMode(images);
-            if (mode === 'scatter') initScatterMode(images);
-            if (mode === 'ribbon') initRibbonMode(images);
-            if (mode === 'cube') initCubeMode(images);
-            if (mode === 'sphere') initSphereMode(images);
-            if (mode === 'vortex') initVortexMode(images);
-            if (mode === 'network') initNetworkMode(images);
+            if (mode === 'spiral') {
+                // Use new Class-based effect
+                if (window.SpiralEffect) {
+                    currentEffectInstance = new SpiralEffect(container, images);
+                    currentEffectInstance.init();
+                } else {
+                    console.error("SpiralEffect class not found");
+                }
+            }
+            else if (mode === 'scatter') initScatterMode(images);
+            else if (mode === 'ribbon') initRibbonMode(images);
+            else if (mode === 'cube') initCubeMode(images);
+            else if (mode === 'sphere') initSphereMode(images);
+            else if (mode === 'vortex') initVortexMode(images);
+            else if (mode === 'network') initNetworkMode(images);
         }
     }
 }
 
 // --- Spiral Mode Logic ---
-function initSpiralMode(images) {
-    const stage = document.querySelector('.spiral-stage');
-    if (stage.children.length > 0) return;
+// --- Spiral Mode Logic ---
+// Now handled by js/effects/SpiralEffect.js
+// Keeping this function stub if needed or removing it.
+// The switchMode function now instantiates the class directly.
 
-    let currentScroll = 0;
-
-    images.forEach((src, i) => {
-        const div = document.createElement('div');
-        div.className = 'spiral-item';
-        div.style.backgroundImage = `url(${src})`;
-        stage.appendChild(div);
-
-        const theta = i * 30; // 30 degrees per item
-        const radius = 600;
-        const y = i * 200; // Vertical spacing
-
-        gsap.set(div, {
-            rotationY: -theta,
-            transformOrigin: `50% 50% ${radius}px`,
-            z: -radius,
-            y: y,
-            x: 0
-        });
-    });
-
-    // Center initial view
-    gsap.set(stage, {
-        y: window.innerHeight / 2 - 150, // Center vertically roughly
-        z: 0
-    });
-
-    window.addEventListener('wheel', (e) => {
-        if (!document.getElementById('spiral-container').classList.contains('active')) return;
-
-        currentScroll -= e.deltaY;
-
-        // Animate the stage to rotate and move up/down
-        // We want to rotate so the items come to the front
-        // 30 degrees per item, 200px height per item
-        // So 200px scroll = 30 degrees rotation
-
-        const rotation = (currentScroll / 200) * 30;
-        const yPos = (window.innerHeight / 2 - 150) + currentScroll;
-
-        gsap.to(stage, {
-            rotationY: rotation,
-            y: yPos,
-            duration: 1,
-            ease: 'power2.out'
-        });
-    });
-}
 
 // --- Scatter Mode Logic ---
 function initScatterMode(images) {
