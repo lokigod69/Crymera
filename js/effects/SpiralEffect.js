@@ -20,10 +20,10 @@ class SpiralEffect {
         this.config = {
             radius: 500,            // Distance from center axis to images
             angleStep: 45,          // Degrees between items around the spiral (360/8 = 8 items per revolution)
-            heightStep: 180,        // Vertical distance between items
+            heightStep: 200,        // Vertical distance between items
             perspective: 1400,      // Camera perspective
-            itemWidth: 400,         // Image width
-            itemHeight: 300,        // Image height
+            itemWidth: 280,         // Image width (VERTICAL/PORTRAIT format)
+            itemHeight: 380,        // Image height (VERTICAL/PORTRAIT format)
             scrollSensitivity: 0.0015, // Very smooth scrolling
             animationEase: 0.1,     // Smooth animation interpolation
             focusGlow: 'rgba(0, 255, 255, 0.8)',
@@ -272,8 +272,7 @@ class SpiralEffect {
         // Clamp to valid range
         this.targetScroll = Math.max(0, Math.min(this.images.length - 1, this.targetScroll));
 
-        // Snap after scrolling stops
-        this.snapTimeout = setTimeout(() => this.snapToNearest(), 200);
+        // NO SNAP - allow staying between images
     }
 
     snapToNearest() {
