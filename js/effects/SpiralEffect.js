@@ -251,6 +251,9 @@ class SpiralEffect {
     updateItems() {
         const focusedIndex = Math.round(this.scrollProgress);
 
+        // Calculate the current cylinder rotation (same as in animate())
+        const cylinderRotY = -this.scrollProgress * this.config.angleStep;
+
         this.itemElements.forEach(item => {
             const dist = Math.abs(item.index - this.scrollProgress);
             const isFocused = dist < 0.5;
@@ -273,13 +276,23 @@ class SpiralEffect {
 
             // Focus effects - bring the focused item forward to the center
             if (isFocused) {
-                // Focused image: bring it forward to exactly face the viewer
-                // translateZ brings it toward camera, out of the spiral
-                const forwardZ = this.config.cameraDistance - 100; // Come forward almost to camera position
+                // Focused image: needs to counter-rotate against the cylinder's rotation
+                // so it faces the viewer directly, and come forward to center
+
+                // Counter-rotate: negate the cylinder rotation + the item's own theta + 180 deg face-in
+                const counterRotY = -cylinderRotY - item.theta;
+
+                // Calculate how much to bring forward (closer = more forward)
+                const forwardAmount = (1 - dist * 2) * 300; // Max 300px forward when exactly focused
+                const forwardZ = this.config.radius + forwardAmount;
 
                 item.el.style.boxShadow = `0 0 60px ${this.config.focusGlow}, 0 25px 80px rgba(0, 0, 0, 0.9)`;
                 item.el.style.borderColor = this.config.focusGlow;
+
+                // Keep the Y position, but counter-rotate and come forward
                 item.el.style.transform = `
+                    translateY(${item.y}px)
+                    rotateY(${counterRotY}deg)
                     translateZ(${forwardZ}px)
                     scale(${scale})
                 `;
