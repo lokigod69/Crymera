@@ -111,10 +111,24 @@
     opacity: 1;
 }
 
-/* Spiral Mode */
+/* Spiral Mode - Enhanced */
 #spiral-container {
-    perspective: 1000px;
-    background: radial-gradient(circle at center, #1a1a1a 0%, #000 100%);
+    perspective: 1800px;
+    perspective-origin: 50% 50%;
+    background: radial-gradient(ellipse at center, #0a0f1a 0%, #030508 50%, #000 100%);
+    overflow: hidden;
+}
+
+#spiral-container::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 200%;
+    height: 200%;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle at center, rgba(0, 100, 150, 0.05) 0%, transparent 50%);
+    pointer-events: none;
 }
 
 .spiral-stage {
@@ -126,22 +140,68 @@
     align-items: center;
 }
 
+.spiral-cylinder {
+    transform-style: preserve-3d;
+}
+
 .spiral-item {
     position: absolute;
-    width: 200px;
-    height: 300px;
     background-size: cover;
     background-position: center;
-    border: 2px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-    transition: transform 0.3s ease, filter 0.3s ease;
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+    transition: box-shadow 0.4s ease, border-color 0.4s ease;
     cursor: pointer;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.spiral-item::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%);
+    pointer-events: none;
+    border-radius: 12px;
 }
 
 .spiral-item:hover {
-    border-color: #0ff;
-    box-shadow: 0 0 30px #0ff;
-    filter: brightness(1.2);
+    border-color: rgba(0, 255, 255, 0.6);
+    box-shadow: 0 0 40px rgba(0, 255, 255, 0.4), 0 20px 60px rgba(0, 0, 0, 0.8);
+}
+
+.spiral-item.focused {
+    border-color: rgba(0, 255, 255, 0.8);
+    box-shadow: 0 0 50px rgba(0, 255, 255, 0.8), 0 20px 60px rgba(0, 0, 0, 0.8);
+}
+
+.spiral-item-image {
+    transition: transform 0.3s ease;
+}
+
+.spiral-item:hover .spiral-item-image {
+    transform: scale(1.05);
+}
+
+/* Scroll hint styling */
+.spiral-scroll-hint {
+    animation: fadeInUp 1s ease forwards;
+    animation-delay: 1s;
+    opacity: 0;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translate(-50%, 20px);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
 }
 
 /* Scatter Mode */
