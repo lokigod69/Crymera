@@ -26,10 +26,10 @@ class SpiralEffect {
             cameraDistance: 900,    // How far back the camera sits from the spiral center
             itemWidth: 380,         // Image width
             itemHeight: 280,        // Image height
-            scrollSensitivity: 0.008, // Scroll speed (increased for better response)
-            snapThreshold: 0.4,     // When to snap to nearest image (increased to allow small scrolls)
-            animationEase: 0.15,    // Smooth animation factor
-            focusScale: 1.2,        // Scale of focused image
+            scrollSensitivity: 0.002, // Scroll speed - REDUCED for smoother scrolling
+            snapThreshold: 0.4,     // When to snap to nearest image
+            animationEase: 0.12,    // Smooth animation factor
+            focusScale: 1.15,       // Scale of focused image
             focusGlow: 'rgba(0, 255, 255, 0.8)', // Glow color for focused image
         };
 
@@ -120,8 +120,8 @@ class SpiralEffect {
                 border: '2px solid rgba(255, 255, 255, 0.15)',
                 overflow: 'hidden',
                 cursor: 'pointer',
-                transition: 'box-shadow 0.4s ease, border-color 0.4s ease, transform 0.3s ease',
-                backfaceVisibility: 'hidden'
+                transition: 'box-shadow 0.4s ease, border-color 0.4s ease'
+                // NOTE: Removed backfaceVisibility to prevent images from disappearing
             });
 
             // Click handler - navigate to this image
@@ -249,50 +249,61 @@ class SpiralEffect {
     }
 
     updateItems() {
-        const focusedIndex = Math.round(this.scrollProgress);
-
         // Calculate the current cylinder rotation (same as in animate())
         const cylinderRotY = -this.scrollProgress * this.config.angleStep;
 
         this.itemElements.forEach(item => {
             const dist = Math.abs(item.index - this.scrollProgress);
-            const isFocused = dist < 0.5;
+
+            // Calculate the world-space rotation of this item
+            // Item's own theta + cylinder rotation = where it actually faces in world
+            const worldRotY = item.theta + cylinderRotY;
+
+            // Normalize to -180 to 180 range
+            let normalizedRot = worldRotY % 360;
+            if (normalizedRot > 180) normalizedRot -= 360;
+            if (normalizedRot < -180) normalizedRot += 360;
+
+            // Calculate how "front-facing" this item is (0 = facing camera, 180 = facing away)
+            const facingAngle = Math.abs(normalizedRot);
+            const isFrontFacing = facingAngle < 60; // Within 60 degrees of facing camera
+            const isNearFocus = dist < 0.8;
 
             // Calculate opacity based on distance from focus
-            // Items further away fade out gracefully
             let opacity = 1;
             if (dist > 2) {
-                opacity = Math.max(0.2, 1 - (dist - 2) / 3);
+                opacity = Math.max(0.3, 1 - (dist - 2) / 4);
             }
 
-            // Scale effect for focused item
+            // Scale effect for items near focus
             let scale = 1;
             if (dist < 1) {
                 scale = 1 + (1 - dist) * (this.config.focusScale - 1);
             }
 
-            // Apply styles
+            // Apply opacity
             item.el.style.opacity = opacity;
 
-            // Focus effects - bring the focused item forward to the center
+            // Determine if this is the focused item (closest to scrollProgress and front-facing)
+            const isFocused = isNearFocus && isFrontFacing;
+
             if (isFocused) {
-                // Focused image: needs to counter-rotate against the cylinder's rotation
-                // so it faces the viewer directly, and come forward to center
+                // FOCUSED: Bring forward and face the camera directly
+                // The image should face straight at the viewer (rotateY = 0 in world space)
+                // Since the cylinder has rotated by cylinderRotY, we need to counter-rotate
+                // The item's own position is at theta, and it has +180 to face inward
+                // So total rotation to face camera = -(item.theta + cylinderRotY)
+                const faceCamera = -(item.theta + cylinderRotY);
 
-                // Counter-rotate: negate the cylinder rotation + the item's own theta + 180 deg face-in
-                const counterRotY = -cylinderRotY - item.theta;
-
-                // Calculate how much to bring forward (closer = more forward)
-                const forwardAmount = (1 - dist * 2) * 300; // Max 300px forward when exactly focused
+                // How much to bring forward (closer to focus = more forward)
+                const forwardAmount = (1 - dist) * 400;
                 const forwardZ = this.config.radius + forwardAmount;
 
                 item.el.style.boxShadow = `0 0 60px ${this.config.focusGlow}, 0 25px 80px rgba(0, 0, 0, 0.9)`;
                 item.el.style.borderColor = this.config.focusGlow;
-
-                // Keep the Y position, but counter-rotate and come forward
                 item.el.style.transform = `
                     translateY(${item.y}px)
-                    rotateY(${counterRotY}deg)
+                    rotateY(${faceCamera}deg)
                     translateZ(${forwardZ}px)
                     scale(${scale})
                 `;
@@ -300,7 +311,7 @@ class SpiralEffect {
                 item.el.style.pointerEvents = 'auto';
                 item.el.classList.add('focused');
             } else {
-                // Non-focused: stay in the spiral helix position
+                // NOT FOCUSED: Stay in the spiral helix position, facing inward
                 item.el.style.boxShadow = '0 15px 40px rgba(0, 0, 0, 0.6)';
                 item.el.style.borderColor = 'rgba(255, 255, 255, 0.15)';
                 item.el.style.transform = `
@@ -309,8 +320,8 @@ class SpiralEffect {
                     translateZ(${this.config.radius}px)
                     rotateY(180deg)
                 `;
-                item.el.style.zIndex = '1';
-                item.el.style.pointerEvents = dist < 1.5 ? 'auto' : 'none';
+                item.el.style.zIndex = Math.max(1, 50 - Math.floor(dist * 10));
+                item.el.style.pointerEvents = dist < 2 ? 'auto' : 'none';
                 item.el.classList.remove('focused');
             }
         });
