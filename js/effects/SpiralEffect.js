@@ -1,7 +1,7 @@
 /**
  * SpiralEffect.js
- * Implements a "Flythrough" spiral effect where items travel along a helical path
- * and pass directly in front of the camera.
+ * Implements an "Inside-Out Helix" effect where the user is at the center
+ * and items spiral around them on a cylinder, coming into focus one by one.
  */
 
 class SpiralEffect {
@@ -9,6 +9,7 @@ class SpiralEffect {
         this.container = container;
         this.images = images;
         this.stage = null;
+        this.cylinder = null;
         this.itemElements = [];
         this.scrollProgress = 0;
         this.targetScroll = 0;
@@ -16,11 +17,10 @@ class SpiralEffect {
 
         // Configuration
         this.config = {
-            radius: 400,            // Radius of the spiral
-            angleStep: 0.5,         // Radians per item
-            zStep: 500,             // Distance between items
-            focalPoint: -400,       // Z position where the "active" item sits (negative is into screen)
-            rotationSpeed: 0.5      // How much the item rotates as it passes
+            radius: 800,            // Distance from center to images
+            angleStep: 40,          // Degrees between items
+            heightStep: 100,        // Vertical distance between items
+            perspective: 2000       // Camera perspective depth
         };
 
         // Bindings
@@ -32,10 +32,14 @@ class SpiralEffect {
     init() {
         if (this.isGenerated) return;
 
-        // Create Stage
-        this.stage = document.createElement('div');
-        this.stage.className = 'spiral-stage-3d';
-        this.stage.style.cssText = `
+        // Container Style (Camera)
+        this.container.style.perspective = `${this.config.perspective}px`;
+        this.container.style.overflow = 'hidden';
+
+        // Create Cylinder (The World)
+        this.cylinder = document.createElement('div');
+        this.cylinder.className = 'spiral-cylinder';
+        this.cylinder.style.cssText = `
             position: absolute;
             width: 100%;
             height: 100%;
@@ -43,25 +47,61 @@ class SpiralEffect {
             top: 0;
             left: 0;
         `;
-        this.container.appendChild(this.stage);
+        this.container.appendChild(this.cylinder);
+
+        // Center the cylinder origin to the middle of the screen
+        // We will move the cylinder ITSELF to center.
+        // But 3D transforms origin is usually 50% 50%.
 
         // Create Items
         this.images.forEach((src, i) => {
             const div = document.createElement('div');
             div.className = 'spiral-item';
             div.style.backgroundImage = `url(${src})`;
-            // Ensure basic styles for 3d items if CSS is missing
+            // Default sizing if CSS not loaded yet
             div.style.position = 'absolute';
             div.style.left = '50%';
             div.style.top = '50%';
-            div.style.width = '300px';
-            div.style.height = '400px';
-            div.style.marginLeft = '-150px';
-            div.style.marginTop = '-200px';
+            div.style.width = '400px';
+            div.style.height = '300px';
+            div.style.marginLeft = '-200px'; // Center registration
+            div.style.marginTop = '-150px';
             div.style.backgroundSize = 'cover';
             div.style.backgroundPosition = 'center';
+            div.style.backfaceVisibility = 'hidden'; // Don't show back of images
 
-            this.stage.appendChild(div);
+            // Initial Placement on Cylinder
+            // We rotate Y to the angle, then push out Z by radius.
+            // Then we rotate Y 180 so it faces INWARDS.
+            const theta = i * this.config.angleStep;
+            const y = i * this.config.heightStep;
+
+            // We set the static transform here.
+            // The animation will move the whole cylinder.
+            // Note: We use -theta because we want the spiral to wind in a specific way?
+            // Let's stick to positive theta for index increase.
+
+            const transform = `
+                translateY(${y}px)
+                rotateY(${theta}deg)
+                translateZ(${this.config.radius}px)
+                rotateY(180deg)
+            `;
+
+            // Note: Transform order matters!
+            // 1. translateY: move down the strip
+            // 2. rotateY: turn to angle
+            // 3. translateZ: push out
+            // 4. rotateY: face center (180 flip)
+
+            // Actually, we want to center the STRIP.
+            // So if we just set this, item 0 is at Y=0.
+
+            div.style.transform = transform;
+
+            // Optional: add reflection or shadow here
+
+            this.cylinder.appendChild(div);
             this.itemElements.push({
                 el: div,
                 index: i
@@ -73,106 +113,86 @@ class SpiralEffect {
         this.animate();
     }
 
-    // Mathematical Path Function
-    getPathPos(index) {
-        const theta = index * this.config.angleStep;
-        const x = Math.cos(theta) * this.config.radius;
-        const y = Math.sin(theta) * this.config.radius;
-        const z = index * this.config.zStep;
-        return { x, y, z, theta };
-    }
-
     animate() {
         // Smooth scroll
-        this.scrollProgress += (this.targetScroll - this.scrollProgress) * 0.1;
+        // Damping 0.1 for smoothness
+        const diff = this.targetScroll - this.scrollProgress;
+        if (Math.abs(diff) > 0.001) {
+            this.scrollProgress += diff * 0.1;
+        } else {
+            this.scrollProgress = this.targetScroll;
+        }
 
-        // Current World Center (where we are on the path)
-        // We want the point on the path at 'scrollProgress' to be at (0, 0, focalPoint)
-        const worldPos = this.getPathPos(this.scrollProgress);
+        // Move Cylinder
+        // We want item 'scrollProgress' to be at (0,0,0) (Front Center).
+        // 1. We need to translate Y UP by (scrollProgress * heightStep)
+        //    (Because item Y was +y, so we need -y on container? No, -y moves container up? 
+        //     Wait. screen Y goes Down. So +Y on item is Down.
+        //     To bring item up to center (0), we need container to move Up.
+        //     Container Y = - (scrollProgress * heightStep).
 
+        // 2. We need to rotate Y by -(scrollProgress * angleStep).
+        //    (Item was at +theta. We rotate container -theta to bring it to 0).
+
+        const yPos = -this.scrollProgress * this.config.heightStep;
+        const rotY = -this.scrollProgress * this.config.angleStep;
+
+        // Apply to Cylinder
+        // We also center it first? CSS logic:
+        // transform-origin is 50% 50% (center of screen typically).
+        // So translateZ(perspective) is not needed if container has perspective.
+        // But we might want to push cylinder back if radius is huge? 
+        // No, we want camera in center. So Cylinder center is at 0,0,0.
+
+        this.cylinder.style.transform = `
+            translateZ(0px)
+            translateY(${yPos}px)
+            rotateY(${rotY}deg)
+        `;
+
+        // Update Opacity/Visibility per item
         this.itemElements.forEach(item => {
-            // Layout Calculations
-            const itemPos = this.getPathPos(item.index);
+            // Distance from "active" index
+            const dist = Math.abs(item.index - this.scrollProgress);
 
-            // Relative Position
-            // We subtract the world pos (camera movement) and add the focal point offset
-            // However, since it's a spiral, simple subtraction of vectors works for translation
-            // but we also need to account for the rotation if we want the "tunnel" to not rotate wildly.
-            // Actually, if we just translate, the spiral stays fixed and we slide along it.
-            // This means we will be "outside" looking at the spiral if we don't rotate with it.
-            // But the user said "axis is turning... I don't really get to see".
-            // So we SHOULD move the camera into the spiral.
+            // Opacity
+            let opacity = 1;
+            if (dist > 8) opacity = 0; // Far away items invisible
+            else if (dist > 4) opacity = 1 - ((dist - 4) / 4);
 
-            // Vector from Camera(0,0,0) to Item
-            // Camera viewing direction is usually -Z or +Z. In CSS 3D, deeper is negative Z usually? 
-            // Standard CSS: Z comes OUT of screen. So -Z is into screen.
-            // Let's rely on standard coordinate space.
-
-            // Let's implement: Active Item is at (0,0,0).
-            const relZ = (item.index - this.scrollProgress) * this.config.zStep;
-
-            // If we just use the spiral equation for X/Y based on item index:
-            // x = R * cos(theta), y = R * sin(theta)
-            // It spirals around 0,0.
-            // As we scroll Z, items come closer.
-            // But the "Active" item might be at X=R, Y=0. That's off-center.
-            // We want the Active Item to be at X=0, Y=0.
-
-            // So we must offset the entire stage by the inverse of the active item's X/Y.
-            const activePos = this.getPathPos(this.scrollProgress);
-
-            const dx = itemPos.x - activePos.x;
-            const dy = itemPos.y - activePos.y; // Or + depending on coord system
-
-            // We also want to rotate the item so it faces inward? Or just flat?
-            // Let's start with flat 2D billboards that spiral.
-
-            const dz = relZ + this.config.focalPoint; // Push back to focal point
-
-            // Opacity/Visibility Optimization
-            const opacity = this.calculateOpacity(dz);
-            if (opacity <= 0.01) {
-                item.el.style.display = 'none';
-                return;
-            }
-            item.el.style.display = 'block';
             item.el.style.opacity = opacity;
+            item.el.style.pointerEvents = (dist < 1) ? 'auto' : 'none'; // Only center clickable
 
-            // Transform
-            const transform = `translate3d(${dx}px, ${dy}px, ${dz}px)`;
-            item.el.style.transform = transform;
+            // Optional: Scale effect for center focus?
+            // Making the center item slightly larger
+            if (dist < 1) {
+                // item.el.style.filter = 'brightness(1.2)';
+            } else {
+                // item.el.style.filter = 'brightness(0.6)';
+            }
         });
 
         this.rafId = requestAnimationFrame(this.animate.bind(this));
     }
 
-    calculateOpacity(z) {
-        // Fade out if too close (behind camera) or too far
-        // Z=0 is screen. Positive is towards user. Negative is deep.
-        // Wait, focalPoint is -400.
-        // If z > 100 (past screen), fade out.
-        // If z < -2000 (far away), fade out.
-
-        let op = 1;
-        if (z > 200) op = 0;
-        else if (z > 0) op = 1 - (z / 200);
-        else if (z < -3000) op = 0;
-        else if (z < -1000) op = 1 - ((-z - 1000) / 2000);
-
-        return op;
-    }
-
     onWheel(e) {
         // Adjust speed
-        this.targetScroll += e.deltaY * 0.002;
+        // e.deltaY is usually 100 per tick.
+        // We want 1 tick = 1 item?
+        // Let's say 100px scroll = 1 item.
+        const sensitivity = 0.005;
+        this.targetScroll += e.deltaY * sensitivity;
 
         // Clamp
         if (this.targetScroll < 0) this.targetScroll = 0;
         if (this.targetScroll > this.images.length - 1) this.targetScroll = this.images.length - 1;
+
+        // Optional: Snap to integer?
+        // this.startSnapping();
     }
 
     onResize() {
-        // Config handler
+        // Handle resize if calculating positions based on screen size
     }
 
     addEvents() {
@@ -188,7 +208,7 @@ class SpiralEffect {
     destroy() {
         this.removeEvents();
         if (this.rafId) cancelAnimationFrame(this.rafId);
-        if (this.stage) this.stage.remove();
+        if (this.cylinder) this.cylinder.remove();
         this.isGenerated = false;
         this.itemElements = [];
     }
