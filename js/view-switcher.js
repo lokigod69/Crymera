@@ -131,45 +131,198 @@ function switchMode(mode, images) {
 // The switchMode function now instantiates the class directly.
 
 
-// --- Scatter Mode Logic ---
+// --- Scatter Mode Logic (Enhanced with Drag and Rotate) ---
 function initScatterMode(images) {
     const container = document.getElementById('scatter-container');
     if (container.children.length > 0) return;
 
+    // Calculate grid positions with random offsets to avoid overlaps
+    const polaroidWidth = 200;
+    const polaroidHeight = 260; // Including white border
+    const padding = 50;
+    const cols = Math.floor((window.innerWidth - padding * 2) / (polaroidWidth + 30));
+    const rows = Math.ceil(images.length / cols);
+
+    const startX = padding + polaroidWidth / 2;
+    const startY = padding + polaroidHeight / 2;
+    const spacingX = (window.innerWidth - padding * 2 - polaroidWidth) / Math.max(1, cols - 1);
+    const spacingY = (window.innerHeight - padding * 2 - polaroidHeight - 100) / Math.max(1, rows - 1);
+
     images.forEach((src, i) => {
+        // Create polaroid container
         const div = document.createElement('div');
         div.className = 'scatter-item';
-        div.innerHTML = `<img src="${src}" alt="Scatter Image" style="width:100%; height:auto; pointer-events:none;">`;
+        div.style.cssText = `
+            position: absolute;
+            width: ${polaroidWidth}px;
+            background: white;
+            padding: 12px 12px 40px 12px;
+            border-radius: 3px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+            cursor: grab;
+            user-select: none;
+            z-index: ${i + 1};
+        `;
+
+        // Image inside polaroid
+        const img = document.createElement('img');
+        img.src = src;
+        img.alt = 'Scatter Image';
+        img.style.cssText = `
+            width: 100%;
+            height: auto;
+            display: block;
+            pointer-events: none;
+        `;
+        div.appendChild(img);
+
+        // Rotation handle indicator (visual feedback)
+        const rotateHint = document.createElement('div');
+        rotateHint.className = 'rotate-hint';
+        rotateHint.style.cssText = `
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            border: 2px solid transparent;
+            border-radius: 3px;
+            transition: border-color 0.2s;
+        `;
+        div.appendChild(rotateHint);
+
         container.appendChild(div);
 
-        // Random position on screen
-        const x = Math.random() * (window.innerWidth - 200);
-        const y = Math.random() * (window.innerHeight - 200);
-        const rotation = (Math.random() - 0.5) * 40;
+        // Calculate grid-based position with random offset
+        const col = i % cols;
+        const row = Math.floor(i / cols);
+        const baseX = startX + col * spacingX;
+        const baseY = startY + row * spacingY;
+
+        // Random offset to make it look scattered
+        const offsetX = (Math.random() - 0.5) * 80;
+        const offsetY = (Math.random() - 0.5) * 60;
+        const x = Math.max(polaroidWidth / 2, Math.min(window.innerWidth - polaroidWidth / 2, baseX + offsetX));
+        const y = Math.max(polaroidHeight / 2, Math.min(window.innerHeight - polaroidHeight / 2 - 100, baseY + offsetY));
+
+        // Random rotation
+        const rotation = (Math.random() - 0.5) * 30;
 
         gsap.set(div, {
-            x: x,
-            y: y,
-            rotation: rotation
+            x: x - polaroidWidth / 2,
+            y: y - polaroidHeight / 2,
+            rotation: rotation,
+            transformOrigin: '50% 50%'
         });
 
-        // Draggable
-        Draggable.create(div, {
-            type: "x,y",
-            bounds: container,
-            inertia: true,
-            onDragStart: function () {
-                gsap.to(this.target, { scale: 1.1, zIndex: 100, duration: 0.2 });
-            },
-            onDragEnd: function () {
-                gsap.to(this.target, { scale: 1, zIndex: 1, duration: 0.2 });
+        // Track state for this polaroid
+        let currentRotation = rotation;
+        let isDragging = false;
+        let isRotating = false;
+        let startAngle = 0;
+        let startRotation = 0;
+
+        // Determine if mouse is near edge (for rotation)
+        function isNearEdge(e, element) {
+            const rect = element.getBoundingClientRect();
+            const edgeThreshold = 25; // pixels from edge
+
+            const relX = e.clientX - rect.left;
+            const relY = e.clientY - rect.top;
+
+            const nearLeft = relX < edgeThreshold;
+            const nearRight = relX > rect.width - edgeThreshold;
+            const nearTop = relY < edgeThreshold;
+            const nearBottom = relY > rect.height - edgeThreshold;
+
+            return nearLeft || nearRight || nearTop || nearBottom;
+        }
+
+        // Calculate angle from center
+        function getAngle(e, element) {
+            const rect = element.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            return Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180 / Math.PI);
+        }
+
+        // Mouse move for cursor change
+        div.addEventListener('mousemove', (e) => {
+            if (isDragging || isRotating) return;
+
+            if (isNearEdge(e, div)) {
+                div.style.cursor = 'crosshair'; // Rotate cursor
+                rotateHint.style.borderColor = 'rgba(0, 255, 255, 0.5)';
+            } else {
+                div.style.cursor = 'grab';
+                rotateHint.style.borderColor = 'transparent';
             }
         });
 
-        // Click to bring to front
-        div.addEventListener('mousedown', () => {
-            gsap.to(div, { zIndex: 100 });
+        div.addEventListener('mouseleave', () => {
+            if (!isDragging && !isRotating) {
+                div.style.cursor = 'grab';
+                rotateHint.style.borderColor = 'transparent';
+            }
         });
+
+        // Mouse down - determine if drag or rotate
+        div.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+
+            // Bring to front
+            const allItems = container.querySelectorAll('.scatter-item');
+            allItems.forEach(item => item.style.zIndex = '1');
+            div.style.zIndex = '100';
+
+            if (isNearEdge(e, div)) {
+                // Start rotation
+                isRotating = true;
+                startAngle = getAngle(e, div);
+                startRotation = currentRotation;
+                div.style.cursor = 'crosshair';
+            } else {
+                // Start dragging
+                isDragging = true;
+                div.style.cursor = 'grabbing';
+                gsap.to(div, { scale: 1.05, boxShadow: '0 15px 40px rgba(0,0,0,0.5)', duration: 0.2 });
+            }
+        });
+
+        // Mouse move for drag/rotate
+        const onMouseMove = (e) => {
+            if (isDragging) {
+                const currentX = gsap.getProperty(div, 'x');
+                const currentY = gsap.getProperty(div, 'y');
+                gsap.set(div, {
+                    x: currentX + e.movementX,
+                    y: currentY + e.movementY
+                });
+            } else if (isRotating) {
+                const currentAngle = getAngle(e, div);
+                const angleDelta = currentAngle - startAngle;
+                currentRotation = startRotation + angleDelta;
+                gsap.set(div, { rotation: currentRotation });
+            }
+        };
+
+        // Mouse up - end drag/rotate
+        const onMouseUp = () => {
+            if (isDragging) {
+                isDragging = false;
+                div.style.cursor = 'grab';
+                gsap.to(div, { scale: 1, boxShadow: '0 8px 25px rgba(0,0,0,0.4)', duration: 0.2 });
+            }
+            if (isRotating) {
+                isRotating = false;
+                div.style.cursor = 'grab';
+                rotateHint.style.borderColor = 'transparent';
+            }
+        };
+
+        window.addEventListener('mousemove', onMouseMove);
+        window.addEventListener('mouseup', onMouseUp);
     });
 }
 
