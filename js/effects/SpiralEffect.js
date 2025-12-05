@@ -26,9 +26,9 @@ class SpiralEffect {
             cameraDistance: 900,    // How far back the camera sits from the spiral center
             itemWidth: 380,         // Image width
             itemHeight: 280,        // Image height
-            scrollSensitivity: 0.004, // Scroll speed
-            snapThreshold: 0.08,    // When to snap to nearest image
-            animationEase: 0.12,    // Smooth animation factor
+            scrollSensitivity: 0.008, // Scroll speed (increased for better response)
+            snapThreshold: 0.4,     // When to snap to nearest image (increased to allow small scrolls)
+            animationEase: 0.15,    // Smooth animation factor
             focusScale: 1.2,        // Scale of focused image
             focusGlow: 'rgba(0, 255, 255, 0.8)', // Glow color for focused image
         };
@@ -317,37 +317,55 @@ class SpiralEffect {
         }
         this.isSnapping = false;
 
+        // Normalize scroll delta for different devices/browsers
+        // High-precision trackpads might send tiny deltaY values
+        let delta = e.deltaY;
+
+        // Handle different deltaMode values (0=pixels, 1=lines, 2=pages)
+        if (e.deltaMode === 1) {
+            delta *= 40; // Convert lines to pixels
+        } else if (e.deltaMode === 2) {
+            delta *= 800; // Convert pages to pixels
+        }
+
+        // Apply sensitivity with minimum movement threshold
+        const scrollAmount = delta * this.config.scrollSensitivity;
+
         // Apply scroll
-        this.targetScroll += e.deltaY * this.config.scrollSensitivity;
+        this.targetScroll += scrollAmount;
 
         // Clamp to valid range
         this.targetScroll = Math.max(0, Math.min(this.images.length - 1, this.targetScroll));
 
-        // Schedule snap after scroll stops
+        // Schedule snap after scroll stops (longer delay for continuous scrolling)
         this.snapTimeout = setTimeout(() => {
             this.snapToNearest();
-        }, 150);
+        }, 250);
     }
 
     snapToNearest() {
         const nearest = Math.round(this.targetScroll);
         const delta = nearest - this.targetScroll;
+        const absDelta = Math.abs(delta);
 
-        if (Math.abs(delta) > this.config.snapThreshold) {
+        // Always snap if we're not already at a whole number
+        if (absDelta > 0.01) {
             this.isSnapping = true;
 
             // Smooth snap animation using GSAP if available
             if (window.gsap) {
+                // Adjust duration based on distance - shorter for small movements
+                const duration = Math.min(0.5, Math.max(0.2, absDelta * 0.8));
                 gsap.to(this, {
                     targetScroll: nearest,
-                    duration: 0.5,
+                    duration: duration,
                     ease: 'power2.out',
                     onComplete: () => {
                         this.isSnapping = false;
                     }
                 });
             } else {
-                // Fallback to direct set
+                // Fallback: smoothly approach the target
                 this.targetScroll = nearest;
                 this.isSnapping = false;
             }
