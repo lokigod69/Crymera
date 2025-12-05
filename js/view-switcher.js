@@ -134,11 +134,13 @@ function switchMode(mode, images) {
 // --- Scatter Mode Logic (Enhanced with Drag and Rotate) ---
 function initScatterMode(images) {
     const container = document.getElementById('scatter-container');
-    if (container.children.length > 0) return;
+
+    // Clear container for fresh positioning each time
+    container.innerHTML = '';
 
     const polaroidWidth = 180;
-    const polaroidHeight = 240;
-    const margin = 80; // Keep away from screen edges
+    const polaroidHeight = 260; // Account for bottom padding
+    const margin = 50; // Keep away from screen edges
 
     images.forEach((src, i) => {
         // Create polaroid container
@@ -172,11 +174,11 @@ function initScatterMode(images) {
 
         container.appendChild(div);
 
-        // Random position across the FULL screen
-        const maxX = window.innerWidth - polaroidWidth - margin;
-        const maxY = window.innerHeight - polaroidHeight - margin - 100; // Account for bottom menu
-        const x = margin + Math.random() * maxX;
-        const y = margin + Math.random() * maxY;
+        // Random position across the entire screen area
+        const availableWidth = window.innerWidth - polaroidWidth - margin * 2;
+        const availableHeight = window.innerHeight - polaroidHeight - margin * 2 - 80; // 80px for menu
+        const x = margin + Math.random() * Math.max(100, availableWidth);
+        const y = margin + Math.random() * Math.max(100, availableHeight);
         const rotation = (Math.random() - 0.5) * 40;
 
         // Set initial position
