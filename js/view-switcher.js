@@ -207,86 +207,234 @@ function initScatterMode(images) {
         container.appendChild(div);
         console.log('[Scatter] Created polaroid', i, 'at', posX, posY);
 
-        // Native drag implementation
+        // Interaction state
         let isDragging = false;
+        let isRotating = false;
         let startX, startY;
         let currentX = posX;
         let currentY = posY;
+        let currentRotation = rotation;
 
-        // Debug: test if hover works
-        div.addEventListener('mouseenter', function () {
-            console.log('[Scatter] Mouse entered polaroid', i);
+        // Rotation momentum
+        let angularVelocity = 0;
+        let lastAngle = 0;
+        let lastTime = 0;
+        let momentumAnimationId = null;
+
+        // Edge detection threshold (pixels from edge)
+        const edgeThreshold = 30;
+
+        // Helper: Check if point is near edge of element
+        function isNearEdge(clientX, clientY) {
+            const rect = div.getBoundingClientRect();
+            const relX = clientX - rect.left;
+            const relY = clientY - rect.top;
+            const nearLeft = relX < edgeThreshold;
+            const nearRight = relX > rect.width - edgeThreshold;
+            const nearTop = relY < edgeThreshold;
+            const nearBottom = relY > rect.height - edgeThreshold;
+            return nearLeft || nearRight || nearTop || nearBottom;
+        }
+
+        // Helper: Calculate angle from center
+        function getAngle(clientX, clientY) {
+            const rect = div.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            return Math.atan2(clientY - centerY, clientX - centerX) * (180 / Math.PI);
+        }
+
+        // Cursor change on hover based on position
+        div.addEventListener('mousemove', function (e) {
+            if (isDragging || isRotating) return;
+            if (isNearEdge(e.clientX, e.clientY)) {
+                div.style.cursor = 'ew-resize'; // Rotate cursor
+            } else {
+                div.style.cursor = 'grab';
+            }
         });
 
         div.addEventListener('mousedown', function (e) {
-            console.log('[Scatter] Mousedown on polaroid', i);
             e.preventDefault();
-            isDragging = true;
-            startX = e.clientX - currentX;
-            startY = e.clientY - currentY;
+
+            // Stop any ongoing momentum animation
+            if (momentumAnimationId) {
+                cancelAnimationFrame(momentumAnimationId);
+                momentumAnimationId = null;
+            }
 
             // Bring to front
             maxZIndex++;
             div.style.zIndex = maxZIndex;
 
+            // Determine mode based on click position
+            if (isNearEdge(e.clientX, e.clientY)) {
+                // Rotation mode
+                isRotating = true;
+                lastAngle = getAngle(e.clientX, e.clientY);
+                lastTime = performance.now();
+                angularVelocity = 0;
+                div.style.cursor = 'ew-resize';
+            } else {
+                // Drag mode
+                isDragging = true;
+                startX = e.clientX - currentX;
+                startY = e.clientY - currentY;
+                div.style.cursor = 'grabbing';
+            }
+
             // Visual feedback
-            div.style.cursor = 'grabbing';
             div.style.boxShadow = '0 20px 50px rgba(0,0,0,0.6)';
-            div.style.transform = `rotate(${rotation}deg) scale(1.05)`;
+            div.style.transform = `rotate(${currentRotation}deg) scale(1.05)`;
         });
 
         document.addEventListener('mousemove', function (e) {
-            if (!isDragging) return;
-            e.preventDefault();
+            if (isDragging) {
+                e.preventDefault();
+                currentX = e.clientX - startX;
+                currentY = e.clientY - startY;
+                div.style.left = `${currentX}px`;
+                div.style.top = `${currentY}px`;
+            } else if (isRotating) {
+                e.preventDefault();
+                const currentAngle = getAngle(e.clientX, e.clientY);
+                const deltaAngle = currentAngle - lastAngle;
 
-            currentX = e.clientX - startX;
-            currentY = e.clientY - startY;
+                // Handle angle wrap-around
+                let adjustedDelta = deltaAngle;
+                if (deltaAngle > 180) adjustedDelta -= 360;
+                if (deltaAngle < -180) adjustedDelta += 360;
 
-            div.style.left = `${currentX}px`;
-            div.style.top = `${currentY}px`;
+                currentRotation += adjustedDelta;
+                div.style.transform = `rotate(${currentRotation}deg) scale(1.05)`;
+
+                // Calculate angular velocity for momentum
+                const currentTime = performance.now();
+                const deltaTime = currentTime - lastTime;
+                if (deltaTime > 0) {
+                    angularVelocity = adjustedDelta / deltaTime * 16; // Normalize to ~60fps
+                }
+
+                lastAngle = currentAngle;
+                lastTime = currentTime;
+            }
         });
 
         document.addEventListener('mouseup', function () {
-            if (!isDragging) return;
-            isDragging = false;
+            if (isDragging) {
+                isDragging = false;
+                div.style.cursor = 'grab';
+                div.style.boxShadow = '0 8px 25px rgba(0,0,0,0.4)';
+                div.style.transform = `rotate(${currentRotation}deg) scale(1)`;
+            } else if (isRotating) {
+                isRotating = false;
+                div.style.cursor = 'grab';
+                div.style.boxShadow = '0 8px 25px rgba(0,0,0,0.4)';
 
-            div.style.cursor = 'grab';
-            div.style.boxShadow = '0 8px 25px rgba(0,0,0,0.4)';
-            div.style.transform = `rotate(${rotation}deg) scale(1)`;
+                // Apply momentum if there's velocity
+                if (Math.abs(angularVelocity) > 0.5) {
+                    applyMomentum();
+                } else {
+                    div.style.transform = `rotate(${currentRotation}deg) scale(1)`;
+                }
+            }
         });
 
-        // Touch support
+        // Momentum animation
+        function applyMomentum() {
+            const friction = 0.95; // Decay rate
+
+            function animate() {
+                if (Math.abs(angularVelocity) < 0.1) {
+                    // Stopped spinning
+                    div.style.transform = `rotate(${currentRotation}deg) scale(1)`;
+                    momentumAnimationId = null;
+                    return;
+                }
+
+                currentRotation += angularVelocity;
+                angularVelocity *= friction;
+
+                div.style.transform = `rotate(${currentRotation}deg) scale(1)`;
+                momentumAnimationId = requestAnimationFrame(animate);
+            }
+
+            momentumAnimationId = requestAnimationFrame(animate);
+        }
+
+        // Touch support with rotation
         div.addEventListener('touchstart', function (e) {
             e.preventDefault();
             const touch = e.touches[0];
-            isDragging = true;
-            startX = touch.clientX - currentX;
-            startY = touch.clientY - currentY;
+
+            if (momentumAnimationId) {
+                cancelAnimationFrame(momentumAnimationId);
+                momentumAnimationId = null;
+            }
 
             maxZIndex++;
             div.style.zIndex = maxZIndex;
+
+            if (isNearEdge(touch.clientX, touch.clientY)) {
+                isRotating = true;
+                lastAngle = getAngle(touch.clientX, touch.clientY);
+                lastTime = performance.now();
+                angularVelocity = 0;
+            } else {
+                isDragging = true;
+                startX = touch.clientX - currentX;
+                startY = touch.clientY - currentY;
+            }
+
             div.style.boxShadow = '0 20px 50px rgba(0,0,0,0.6)';
-            div.style.transform = `rotate(${rotation}deg) scale(1.05)`;
+            div.style.transform = `rotate(${currentRotation}deg) scale(1.05)`;
         }, { passive: false });
 
         div.addEventListener('touchmove', function (e) {
-            if (!isDragging) return;
+            if (!isDragging && !isRotating) return;
             e.preventDefault();
             const touch = e.touches[0];
 
-            currentX = touch.clientX - startX;
-            currentY = touch.clientY - startY;
+            if (isDragging) {
+                currentX = touch.clientX - startX;
+                currentY = touch.clientY - startY;
+                div.style.left = `${currentX}px`;
+                div.style.top = `${currentY}px`;
+            } else if (isRotating) {
+                const currentAngle = getAngle(touch.clientX, touch.clientY);
+                let deltaAngle = currentAngle - lastAngle;
+                if (deltaAngle > 180) deltaAngle -= 360;
+                if (deltaAngle < -180) deltaAngle += 360;
 
-            div.style.left = `${currentX}px`;
-            div.style.top = `${currentY}px`;
+                currentRotation += deltaAngle;
+                div.style.transform = `rotate(${currentRotation}deg) scale(1.05)`;
+
+                const currentTime = performance.now();
+                const deltaTime = currentTime - lastTime;
+                if (deltaTime > 0) {
+                    angularVelocity = deltaAngle / deltaTime * 16;
+                }
+
+                lastAngle = currentAngle;
+                lastTime = currentTime;
+            }
         }, { passive: false });
 
         div.addEventListener('touchend', function () {
-            if (!isDragging) return;
-            isDragging = false;
+            if (isDragging) {
+                isDragging = false;
+                div.style.boxShadow = '0 8px 25px rgba(0,0,0,0.4)';
+                div.style.transform = `rotate(${currentRotation}deg) scale(1)`;
+            } else if (isRotating) {
+                isRotating = false;
+                div.style.boxShadow = '0 8px 25px rgba(0,0,0,0.4)';
 
-            div.style.boxShadow = '0 8px 25px rgba(0,0,0,0.4)';
-            div.style.transform = `rotate(${rotation}deg) scale(1)`;
+                if (Math.abs(angularVelocity) > 0.5) {
+                    applyMomentum();
+                } else {
+                    div.style.transform = `rotate(${currentRotation}deg) scale(1)`;
+                }
+            }
         });
     });
 }
