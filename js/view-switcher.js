@@ -30,7 +30,6 @@ function initViewSwitcher() {
             <button class="view-mode-btn active" data-mode="default">Grid</button>
             <button class="view-mode-btn" data-mode="spiral">Spiral</button>
             <button class="view-mode-btn" data-mode="scatter">Scatter</button>
-            <button class="view-mode-btn" data-mode="ribbon">Ribbon</button>
             <button class="view-mode-btn" data-mode="cube">Cube</button>
             <button class="view-mode-btn" data-mode="sphere">Sphere</button>
             <button class="view-mode-btn" data-mode="vortex">Vortex</button>
@@ -39,15 +38,14 @@ function initViewSwitcher() {
     `;
     document.body.appendChild(controls);
 
-    // Create Containers for new modes
-    const modes = ['spiral', 'scatter', 'ribbon', 'cube', 'sphere', 'vortex', 'network'];
+    // Create Containers for new modes (Ribbon removed)
+    const modes = ['spiral', 'scatter', 'cube', 'sphere', 'vortex', 'network'];
     modes.forEach(mode => {
         const container = document.createElement('div');
         container.id = `${mode}-container`;
         container.className = 'gallery-mode-container';
 
         if (mode === 'spiral') container.innerHTML = '<div class="spiral-stage"></div>';
-        if (mode === 'ribbon') container.innerHTML = '<div class="ribbon-stage"></div>';
         if (mode === 'cube') container.innerHTML = '<div class="cube-wrapper"></div>';
         if (mode === 'sphere') container.innerHTML = '<div class="sphere-stage"></div>';
         if (mode === 'vortex') container.innerHTML = '<div class="vortex-stage"></div>';
@@ -115,7 +113,6 @@ function switchMode(mode, images) {
                 }
             }
             else if (mode === 'scatter') initScatterMode(images);
-            else if (mode === 'ribbon') initRibbonMode(images);
             else if (mode === 'cube') initCubeMode(images);
             else if (mode === 'sphere') initSphereMode(images);
             else if (mode === 'vortex') initVortexMode(images);
