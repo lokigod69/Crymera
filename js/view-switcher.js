@@ -131,7 +131,7 @@ function switchMode(mode, images) {
 // The switchMode function now instantiates the class directly.
 
 
-// --- Scatter Mode Logic (Enhanced with Drag and Rotate) ---
+// --- Scatter Mode Logic (Simplified - Focus on Drag) ---
 function initScatterMode(images) {
     const container = document.getElementById('scatter-container');
 
@@ -157,7 +157,8 @@ function initScatterMode(images) {
             userSelect: 'none',
             zIndex: String(i + 1),
             left: '0',
-            top: '0'
+            top: '0',
+            touchAction: 'none'
         });
 
         // Image inside polaroid
@@ -168,8 +169,11 @@ function initScatterMode(images) {
             width: '100%',
             height: 'auto',
             display: 'block',
-            pointerEvents: 'none'
+            pointerEvents: 'none',
+            userSelect: 'none',
+            draggable: 'false'
         });
+        img.draggable = false;
         div.appendChild(img);
 
         container.appendChild(div);
@@ -181,102 +185,37 @@ function initScatterMode(images) {
         const y = margin + Math.random() * Math.max(100, availableHeight);
         const rotation = (Math.random() - 0.5) * 40;
 
-        // Set initial position
+        // Set initial position using GSAP
         gsap.set(div, {
             x: x,
             y: y,
             rotation: rotation
         });
 
-        // State tracking for rotation
-        let currentRotation = rotation;
-        let isRotating = false;
-        let rotateStartAngle = 0;
-        let rotateStartRotation = 0;
-
-        // Check if click is near edge for rotation
-        function isNearEdge(clientX, clientY) {
-            const rect = div.getBoundingClientRect();
-            const threshold = 30;
-            const relX = clientX - rect.left;
-            const relY = clientY - rect.top;
-            return relX < threshold || relX > rect.width - threshold ||
-                relY < threshold || relY > rect.height - threshold;
-        }
-
-        // Get angle from center of element
-        function getAngleFromCenter(clientX, clientY) {
-            const rect = div.getBoundingClientRect();
-            const cx = rect.left + rect.width / 2;
-            const cy = rect.top + rect.height / 2;
-            return Math.atan2(clientY - cy, clientX - cx) * (180 / Math.PI);
-        }
-
-        // Create GSAP Draggable for moving
-        const draggable = Draggable.create(div, {
+        // Create GSAP Draggable - simple drag only
+        Draggable.create(div, {
             type: 'x,y',
             inertia: true,
-            onPress: function (e) {
-                // Check if near edge - if so, we'll rotate instead
-                if (isNearEdge(e.clientX, e.clientY)) {
-                    this.disable();
-                    isRotating = true;
-                    rotateStartAngle = getAngleFromCenter(e.clientX, e.clientY);
-                    rotateStartRotation = currentRotation;
-                    div.style.cursor = 'crosshair';
-                }
+            zIndexBoost: true,
+            onPress: function () {
+                // Bring to front
+                gsap.set(div, { zIndex: 1000 });
             },
             onDragStart: function () {
-                gsap.to(div, { scale: 1.08, boxShadow: '0 15px 45px rgba(0,0,0,0.5)', duration: 0.2 });
-                div.style.zIndex = '100';
+                gsap.to(div, {
+                    scale: 1.08,
+                    boxShadow: '0 15px 45px rgba(0,0,0,0.5)',
+                    duration: 0.2
+                });
                 div.style.cursor = 'grabbing';
             },
             onDragEnd: function () {
-                gsap.to(div, { scale: 1, boxShadow: '0 8px 25px rgba(0,0,0,0.4)', duration: 0.2 });
+                gsap.to(div, {
+                    scale: 1,
+                    boxShadow: '0 8px 25px rgba(0,0,0,0.4)',
+                    duration: 0.2
+                });
                 div.style.cursor = 'grab';
-            }
-        })[0];
-
-        // Handle rotation with mouse events
-        div.addEventListener('mousedown', function (e) {
-            if (isNearEdge(e.clientX, e.clientY)) {
-                e.preventDefault();
-                e.stopPropagation();
-                isRotating = true;
-                rotateStartAngle = getAngleFromCenter(e.clientX, e.clientY);
-                rotateStartRotation = currentRotation;
-                div.style.zIndex = '100';
-                div.style.cursor = 'crosshair';
-            }
-        });
-
-        // Mousemove for cursor feedback and rotation
-        div.addEventListener('mousemove', function (e) {
-            if (!isRotating && !draggable.isDragging) {
-                if (isNearEdge(e.clientX, e.clientY)) {
-                    div.style.cursor = 'crosshair';
-                } else {
-                    div.style.cursor = 'grab';
-                }
-            }
-        });
-
-        // Global mouse move for rotation dragging
-        window.addEventListener('mousemove', function (e) {
-            if (isRotating) {
-                const currentAngle = getAngleFromCenter(e.clientX, e.clientY);
-                const delta = currentAngle - rotateStartAngle;
-                currentRotation = rotateStartRotation + delta;
-                gsap.set(div, { rotation: currentRotation });
-            }
-        });
-
-        // Global mouse up to end rotation
-        window.addEventListener('mouseup', function () {
-            if (isRotating) {
-                isRotating = false;
-                div.style.cursor = 'grab';
-                draggable.enable();
             }
         });
     });
