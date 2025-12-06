@@ -180,7 +180,8 @@ function initScatterMode(images) {
             top: `${posY}px`,
             transform: `rotate(${rotation}deg)`,
             touchAction: 'none',
-            transition: 'box-shadow 0.2s, transform 0.1s'
+            transition: 'box-shadow 0.2s, transform 0.1s',
+            pointerEvents: 'auto'
         });
 
         // Image inside polaroid

@@ -104,7 +104,8 @@
     opacity: 0;
     transition: opacity 0.5s ease;
     overflow: hidden;
-    cursor: auto; /* Ensure default cursor in containers */
+    cursor: auto;
+    /* Ensure default cursor in containers */
 }
 
 .gallery-mode-container.active {
@@ -164,7 +165,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
     pointer-events: none;
     border-radius: 12px;
 }
@@ -199,6 +200,7 @@
         opacity: 0;
         transform: translate(-50%, 20px);
     }
+
     to {
         opacity: 1;
         transform: translate(-50%, 0);
@@ -208,7 +210,8 @@
 /* Scatter Mode */
 #scatter-container {
     background: #050505;
-    cursor: auto; /* Explicit auto cursor for background */
+    cursor: auto;
+    /* Explicit auto cursor for background */
     touch-action: none;
 }
 
@@ -221,6 +224,8 @@
     transform-origin: center;
     cursor: grab;
     will-change: transform;
+    pointer-events: auto;
+    /* Explicitly enable mouse events */
 }
 
 .scatter-item:active {
