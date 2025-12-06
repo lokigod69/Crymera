@@ -131,7 +131,7 @@ function switchMode(mode, images) {
 // The switchMode function now instantiates the class directly.
 
 
-// --- Scatter Mode Logic (Simplified - Focus on Drag) ---
+// --- Scatter Mode Logic (Native JS Drag) ---
 function initScatterMode(images) {
     const container = document.getElementById('scatter-container');
 
@@ -139,13 +139,24 @@ function initScatterMode(images) {
     container.innerHTML = '';
 
     const polaroidWidth = 180;
-    const polaroidHeight = 260; // Account for bottom padding
-    const margin = 50; // Keep away from screen edges
+    const polaroidHeight = 260;
+    const margin = 50;
+
+    // Track highest z-index
+    let maxZIndex = images.length + 100;
 
     images.forEach((src, i) => {
         // Create polaroid container
         const div = document.createElement('div');
         div.className = 'scatter-item';
+
+        // Random position
+        const availableWidth = window.innerWidth - polaroidWidth - margin * 2;
+        const availableHeight = window.innerHeight - polaroidHeight - margin * 2 - 80;
+        let posX = margin + Math.random() * Math.max(100, availableWidth);
+        let posY = margin + Math.random() * Math.max(100, availableHeight);
+        const rotation = (Math.random() - 0.5) * 40;
+
         Object.assign(div.style, {
             position: 'absolute',
             width: `${polaroidWidth}px`,
@@ -155,10 +166,12 @@ function initScatterMode(images) {
             boxShadow: '0 8px 25px rgba(0,0,0,0.4)',
             cursor: 'grab',
             userSelect: 'none',
-            zIndex: String(i + 1),
-            left: '0',
-            top: '0',
-            touchAction: 'none'
+            zIndex: String(i + 100),
+            left: `${posX}px`,
+            top: `${posY}px`,
+            transform: `rotate(${rotation}deg)`,
+            touchAction: 'none',
+            transition: 'box-shadow 0.2s, transform 0.1s'
         });
 
         // Image inside polaroid
@@ -170,53 +183,87 @@ function initScatterMode(images) {
             height: 'auto',
             display: 'block',
             pointerEvents: 'none',
-            userSelect: 'none',
-            draggable: 'false'
+            userSelect: 'none'
         });
         img.draggable = false;
         div.appendChild(img);
 
         container.appendChild(div);
 
-        // Random position across the entire screen area
-        const availableWidth = window.innerWidth - polaroidWidth - margin * 2;
-        const availableHeight = window.innerHeight - polaroidHeight - margin * 2 - 80; // 80px for menu
-        const x = margin + Math.random() * Math.max(100, availableWidth);
-        const y = margin + Math.random() * Math.max(100, availableHeight);
-        const rotation = (Math.random() - 0.5) * 40;
+        // Native drag implementation
+        let isDragging = false;
+        let startX, startY;
+        let currentX = posX;
+        let currentY = posY;
 
-        // Set initial position using GSAP
-        gsap.set(div, {
-            x: x,
-            y: y,
-            rotation: rotation
+        div.addEventListener('mousedown', function (e) {
+            e.preventDefault();
+            isDragging = true;
+            startX = e.clientX - currentX;
+            startY = e.clientY - currentY;
+
+            // Bring to front
+            maxZIndex++;
+            div.style.zIndex = maxZIndex;
+
+            // Visual feedback
+            div.style.cursor = 'grabbing';
+            div.style.boxShadow = '0 20px 50px rgba(0,0,0,0.6)';
+            div.style.transform = `rotate(${rotation}deg) scale(1.05)`;
         });
 
-        // Create GSAP Draggable - simple drag only
-        Draggable.create(div, {
-            type: 'x,y',
-            inertia: true,
-            zIndexBoost: true,
-            onPress: function () {
-                // Bring to front
-                gsap.set(div, { zIndex: 1000 });
-            },
-            onDragStart: function () {
-                gsap.to(div, {
-                    scale: 1.08,
-                    boxShadow: '0 15px 45px rgba(0,0,0,0.5)',
-                    duration: 0.2
-                });
-                div.style.cursor = 'grabbing';
-            },
-            onDragEnd: function () {
-                gsap.to(div, {
-                    scale: 1,
-                    boxShadow: '0 8px 25px rgba(0,0,0,0.4)',
-                    duration: 0.2
-                });
-                div.style.cursor = 'grab';
-            }
+        document.addEventListener('mousemove', function (e) {
+            if (!isDragging) return;
+            e.preventDefault();
+
+            currentX = e.clientX - startX;
+            currentY = e.clientY - startY;
+
+            div.style.left = `${currentX}px`;
+            div.style.top = `${currentY}px`;
+        });
+
+        document.addEventListener('mouseup', function () {
+            if (!isDragging) return;
+            isDragging = false;
+
+            div.style.cursor = 'grab';
+            div.style.boxShadow = '0 8px 25px rgba(0,0,0,0.4)';
+            div.style.transform = `rotate(${rotation}deg) scale(1)`;
+        });
+
+        // Touch support
+        div.addEventListener('touchstart', function (e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            isDragging = true;
+            startX = touch.clientX - currentX;
+            startY = touch.clientY - currentY;
+
+            maxZIndex++;
+            div.style.zIndex = maxZIndex;
+            div.style.boxShadow = '0 20px 50px rgba(0,0,0,0.6)';
+            div.style.transform = `rotate(${rotation}deg) scale(1.05)`;
+        }, { passive: false });
+
+        div.addEventListener('touchmove', function (e) {
+            if (!isDragging) return;
+            e.preventDefault();
+            const touch = e.touches[0];
+
+            currentX = touch.clientX - startX;
+            currentY = touch.clientY - startY;
+
+            div.style.left = `${currentX}px`;
+            div.style.top = `${currentY}px`;
+        }, { passive: false });
+
+        div.addEventListener('touchend', function () {
+            if (!isDragging) return;
+            isDragging = false;
+
+            div.style.boxShadow = '0 8px 25px rgba(0,0,0,0.4)';
+            div.style.transform = `rotate(${rotation}deg) scale(1)`;
         });
     });
 }
