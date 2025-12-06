@@ -13,7 +13,20 @@
     <link rel="stylesheet" href="css/gallery-flip.css">
 </head>
 
-<body>
+<style>
+    /* DEBUG: Force default cursor everywhere */
+    html, body, * {
+        cursor: auto !important;
+    }
+    .scatter-item {
+        cursor: grab !important;
+    }
+    .scatter-item:active {
+        cursor: grabbing !important;
+    }
+</style>
+
+<body style="cursor: auto !important;">
 
     <header class="main-header">
         <div class="banner" style="background-image: url('assets/a1a.png');">
