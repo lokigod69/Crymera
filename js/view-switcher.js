@@ -144,8 +144,14 @@ function initScatterMode(images) {
     // Clear container for fresh positioning each time
     container.innerHTML = '';
 
-    // Ensure container has correct cursor
+    // Ensure container has correct styles for interaction
     container.style.cursor = 'auto';
+    container.style.pointerEvents = 'auto';
+
+    // Debug: check if container receives click events
+    container.onclick = function (e) {
+        console.log('[Scatter] Container clicked, target:', e.target.className);
+    };
 
     const polaroidWidth = 180;
     const polaroidHeight = 260;
@@ -206,6 +212,11 @@ function initScatterMode(images) {
         let startX, startY;
         let currentX = posX;
         let currentY = posY;
+
+        // Debug: test if hover works
+        div.addEventListener('mouseenter', function () {
+            console.log('[Scatter] Mouse entered polaroid', i);
+        });
 
         div.addEventListener('mousedown', function (e) {
             console.log('[Scatter] Mousedown on polaroid', i);

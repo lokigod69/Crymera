@@ -11,42 +11,38 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/gallery-a.css">
     <link rel="stylesheet" href="css/gallery-flip.css">
+    <style>
+        /* Fix cursor globally but preserve interactive elements */
+        html,
+        body {
+            cursor: auto !important;
+        }
+
+        /* Restore pointer for buttons and links */
+        a,
+        button,
+        .view-mode-btn,
+        .flip-gallery-trigger,
+        .artwork-card {
+            cursor: pointer !important;
+        }
+
+        /* Scatter items get grab cursor */
+        .scatter-item {
+            cursor: grab !important;
+        }
+
+        .scatter-item:active {
+            cursor: grabbing !important;
+        }
+
+        /* Ensure gallery containers don't inherit weird cursors */
+        .gallery-mode-container,
+        #scatter-container {
+            cursor: auto !important;
+        }
+    </style>
 </head>
-
-<style>
-    /* Fix cursor globally but preserve interactive elements */
-    html,
-    body {
-        cursor: auto !important;
-    }
-
-    /* Restore pointer for buttons and links */
-    a,
-    button,
-    .view-mode-btn,
-    .flip-gallery-trigger,
-    .artwork-card {
-        cursor: pointer !important;
-    }
-
-    /* Scatter items get grab cursor */
-    .scatter-item {
-        cursor: grab !important;
-    }
-
-    .scatter-item:active {
-        cursor: grabbing !important;
-    }
-
-    /* Ensure gallery containers don't inherit weird cursors */
-    .gallery-mode-container {
-        cursor: auto !important;
-    }
-
-    #scatter-container {
-        cursor: auto !important;
-    }
-</style>
 
 <body>
 
