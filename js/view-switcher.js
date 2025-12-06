@@ -436,74 +436,80 @@ function initScatterMode(images) {
     });
 }
 
-// --- Ribbon Mode Logic ---
-function initRibbonMode(images) {
-    const stage = document.querySelector('.ribbon-stage');
-    if (stage.children.length > 0) return;
-
-    let scrollX = 0;
-
-    images.forEach((src, i) => {
-        const div = document.createElement('div');
-        div.className = 'ribbon-item'; // Need to ensure CSS exists or use inline styles
-        div.style.cssText = `
-            position: absolute;
-            width: 300px;
-            height: 200px;
-            background-image: url(${src});
-            background-size: cover;
-            background-position: center;
-            border: 2px solid rgba(255,255,255,0.2);
-        `;
-        stage.appendChild(div);
-
-        // Sine wave path
-        const x = i * 350;
-        const y = Math.sin(i * 0.5) * 300;
-        const z = Math.cos(i * 0.5) * 300;
-        const rotationY = Math.cos(i * 0.5) * 45;
-
-        gsap.set(div, {
-            x: x,
-            y: y,
-            z: z,
-            rotationY: rotationY
-        });
-    });
-
-    gsap.set(stage, {
-        x: window.innerWidth / 2 - 150,
-        y: window.innerHeight / 2 - 100,
-        transformStyle: "preserve-3d"
-    });
-
-    window.addEventListener('wheel', (e) => {
-        if (!document.getElementById('ribbon-container').classList.contains('active')) return;
-
-        scrollX -= e.deltaY;
-
-        gsap.to(stage, {
-            x: (window.innerWidth / 2 - 150) + scrollX,
-            duration: 1,
-            ease: 'power2.out'
-        });
-    });
-}
-
-// --- Cube Mode Logic (Fixed) ---
+// --- Cube Mode Logic (Smart Distribution) ---
 function initCubeMode(images) {
+    const container = document.getElementById('cube-container');
     const wrapper = document.querySelector('.cube-wrapper');
     if (wrapper.children.length > 0) return;
 
+    const cubeSize = 400; // Size of each face
+    const faceCount = 6;
+
+    // Center the wrapper in the viewport
+    gsap.set(wrapper, {
+        position: 'absolute',
+        left: '50%',
+        top: '50%',
+        xPercent: -50,
+        yPercent: -50,
+        width: cubeSize,
+        height: cubeSize,
+        transformStyle: 'preserve-3d'
+    });
+
+    // Calculate how to distribute images across 6 faces
+    // Goal: Display all images. Some faces may have 1 image, others may have a grid.
+    const totalImages = images.length;
+
+    // Determine layout per face
+    // If we have 6 or fewer images: 1 per face (some faces may be empty or repeat)
+    // If we have 7-12: distribute so each face gets 1-2 images
+    // If we have more: use grids (2x2 = 4 per face)
+
+    let faceLayouts = []; // Array of { cols, rows } for each face
+    let imagesPerFace = [];
+
+    if (totalImages <= 6) {
+        // One image per face (some faces may be empty if < 6)
+        for (let i = 0; i < faceCount; i++) {
+            if (i < totalImages) {
+                faceLayouts.push({ cols: 1, rows: 1 });
+                imagesPerFace.push(1);
+            } else {
+                faceLayouts.push({ cols: 0, rows: 0 });
+                imagesPerFace.push(0);
+            }
+        }
+    } else {
+        // More than 6 images - need grids on some faces
+        // Figure out minimum images needed per face
+        let remaining = totalImages;
+        let basePerFace = Math.floor(totalImages / faceCount);
+        let extra = totalImages % faceCount;
+
+        for (let i = 0; i < faceCount; i++) {
+            let count = basePerFace + (i < extra ? 1 : 0);
+            imagesPerFace.push(count);
+
+            // Determine grid size
+            if (count <= 1) faceLayouts.push({ cols: 1, rows: 1 });
+            else if (count <= 2) faceLayouts.push({ cols: 2, rows: 1 });
+            else if (count <= 4) faceLayouts.push({ cols: 2, rows: 2 });
+            else if (count <= 6) faceLayouts.push({ cols: 3, rows: 2 });
+            else faceLayouts.push({ cols: 3, rows: 3 }); // Up to 9
+        }
+    }
+
     // Create 6 faces
     const faces = ['front', 'back', 'right', 'left', 'top', 'bottom'];
+    const halfSize = cubeSize / 2;
     const faceTransforms = [
-        'translateZ(400px)',
-        'rotateY(180deg) translateZ(400px)',
-        'rotateY(90deg) translateZ(400px)',
-        'rotateY(-90deg) translateZ(400px)',
-        'rotateX(90deg) translateZ(400px)',
-        'rotateX(-90deg) translateZ(400px)'
+        `translateZ(${halfSize}px)`,                        // front
+        `rotateY(180deg) translateZ(${halfSize}px)`,        // back
+        `rotateY(90deg) translateZ(${halfSize}px)`,         // right
+        `rotateY(-90deg) translateZ(${halfSize}px)`,        // left
+        `rotateX(90deg) translateZ(${halfSize}px)`,         // top
+        `rotateX(-90deg) translateZ(${halfSize}px)`         // bottom
     ];
 
     let imgIndex = 0;
@@ -511,47 +517,56 @@ function initCubeMode(images) {
     faces.forEach((face, i) => {
         const div = document.createElement('div');
         div.className = `cube-face cube-face-${face}`;
-        div.style.transform = faceTransforms[i];
+
+        Object.assign(div.style, {
+            position: 'absolute',
+            width: `${cubeSize}px`,
+            height: `${cubeSize}px`,
+            transform: faceTransforms[i],
+            background: 'rgba(20, 20, 30, 0.9)',
+            border: '2px solid rgba(255, 255, 255, 0.1)',
+            backfaceVisibility: 'hidden',
+            display: 'grid',
+            gridTemplateColumns: `repeat(${faceLayouts[i].cols || 1}, 1fr)`,
+            gridTemplateRows: `repeat(${faceLayouts[i].rows || 1}, 1fr)`,
+            gap: '4px',
+            padding: '4px',
+            boxSizing: 'border-box'
+        });
+
         wrapper.appendChild(div);
 
-        // Fill face with up to 4 images (2x2)
-        for (let j = 0; j < 4; j++) {
-            if (imgIndex < images.length) {
-                const imgDiv = document.createElement('div');
-                imgDiv.className = 'cube-face-item';
-                imgDiv.style.backgroundImage = `url(${images[imgIndex]})`;
-                // Add click to zoom
-                imgDiv.addEventListener('click', (e) => {
-                    e.stopPropagation(); // Prevent drag start if any
-                    // Toggle Zoom
-                    if (wrapper.classList.contains('zoomed')) {
-                        gsap.to(wrapper, { scale: 1, duration: 0.5 });
-                        wrapper.classList.remove('zoomed');
-                    } else {
-                        // Rotate to face this item? For now just simple scale
-                        gsap.to(wrapper, { scale: 1.5, duration: 0.5 });
-                        wrapper.classList.add('zoomed');
-                    }
-                });
-                div.appendChild(imgDiv);
-                imgIndex++;
-            }
+        // Add images to this face
+        const count = imagesPerFace[i];
+        for (let j = 0; j < count && imgIndex < images.length; j++) {
+            const imgDiv = document.createElement('div');
+            imgDiv.className = 'cube-face-item';
+            Object.assign(imgDiv.style, {
+                width: '100%',
+                height: '100%',
+                backgroundImage: `url(${images[imgIndex]})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                borderRadius: '4px'
+            });
+            div.appendChild(imgDiv);
+            imgIndex++;
         }
     });
 
-    // Draggable Cube
-    // We use a proxy element to capture drags anywhere in the container
+    // Draggable Cube with inertia
     let rotationX = 0;
     let rotationY = 0;
 
     Draggable.create(document.createElement('div'), {
-        trigger: document.getElementById('cube-container'),
+        trigger: container,
         type: "x,y",
         inertia: true,
+        cursor: 'grab',
+        activeCursor: 'grabbing',
         onDrag: function () {
             rotationY += this.deltaX * 0.5;
             rotationX -= this.deltaY * 0.5;
-
             gsap.to(wrapper, {
                 rotationY: rotationY,
                 rotationX: rotationX,
@@ -560,7 +575,6 @@ function initCubeMode(images) {
             });
         },
         onThrowUpdate: function () {
-            // Inertia
             rotationY += this.deltaX * 0.5;
             rotationX -= this.deltaY * 0.5;
             gsap.set(wrapper, {
