@@ -133,10 +133,19 @@ function switchMode(mode, images) {
 
 // --- Scatter Mode Logic (Native JS Drag) ---
 function initScatterMode(images) {
+    console.log('[Scatter] Initializing with', images.length, 'images');
+
     const container = document.getElementById('scatter-container');
+    if (!container) {
+        console.error('[Scatter] Container not found!');
+        return;
+    }
 
     // Clear container for fresh positioning each time
     container.innerHTML = '';
+
+    // Ensure container has correct cursor
+    container.style.cursor = 'auto';
 
     const polaroidWidth = 180;
     const polaroidHeight = 260;
@@ -189,6 +198,7 @@ function initScatterMode(images) {
         div.appendChild(img);
 
         container.appendChild(div);
+        console.log('[Scatter] Created polaroid', i, 'at', posX, posY);
 
         // Native drag implementation
         let isDragging = false;
@@ -197,6 +207,7 @@ function initScatterMode(images) {
         let currentY = posY;
 
         div.addEventListener('mousedown', function (e) {
+            console.log('[Scatter] Mousedown on polaroid', i);
             e.preventDefault();
             isDragging = true;
             startX = e.clientX - currentX;

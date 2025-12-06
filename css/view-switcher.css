@@ -104,6 +104,7 @@
     opacity: 0;
     transition: opacity 0.5s ease;
     overflow: hidden;
+    cursor: auto; /* Ensure default cursor in containers */
 }
 
 .gallery-mode-container.active {
@@ -207,7 +208,7 @@
 /* Scatter Mode */
 #scatter-container {
     background: #050505;
-    cursor: default;
+    cursor: auto; /* Explicit auto cursor for background */
     touch-action: none;
 }
 
@@ -227,10 +228,9 @@
 }
 
 .scatter-item img {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: grab;
+    display: block;
+    width: 100%;
+    pointer-events: none;
 }
 
 #cube-container:active {

@@ -38,6 +38,8 @@ body {
     font-size: 16px;
     line-height: 1.6;
     font-weight: 300;
+    cursor: auto;
+    /* Ensure normal cursor by default */
 }
 
 .container {
@@ -91,13 +93,14 @@ img {
     font-size: 3rem;
     font-weight: 700;
     letter-spacing: 2px;
-    text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
 }
 
 .logo-sub {
     font-family: var(--body-font);
     font-size: 1rem;
-    letter-spacing: 5px; /* Wide letter spacing */
+    letter-spacing: 5px;
+    /* Wide letter spacing */
     text-transform: uppercase;
     margin-top: 0.5rem;
     font-weight: 300;
@@ -159,12 +162,35 @@ img {
 }
 
 /* Desktop Grid Layout */
-.artwork-card[data-artwork="1"] { grid-column: 1 / 2; grid-row: 1 / 2; }
-.artwork-card[data-artwork="2"] { grid-column: 2 / 3; grid-row: 1 / 2; }
-.artwork-card[data-artwork="3"] { grid-column: 3 / 5; grid-row: 1 / 2; }
-.artwork-card[data-artwork="4"] { grid-column: 1 / 3; grid-row: 2 / 3; }
-.artwork-card[data-artwork="5"] { grid-column: 3 / 4; grid-row: 2 / 3; }
-.artwork-card[data-artwork="6"] { grid-column: 4 / 5; grid-row: 2 / 3; }
+.artwork-card[data-artwork="1"] {
+    grid-column: 1 / 2;
+    grid-row: 1 / 2;
+}
+
+.artwork-card[data-artwork="2"] {
+    grid-column: 2 / 3;
+    grid-row: 1 / 2;
+}
+
+.artwork-card[data-artwork="3"] {
+    grid-column: 3 / 5;
+    grid-row: 1 / 2;
+}
+
+.artwork-card[data-artwork="4"] {
+    grid-column: 1 / 3;
+    grid-row: 2 / 3;
+}
+
+.artwork-card[data-artwork="5"] {
+    grid-column: 3 / 4;
+    grid-row: 2 / 3;
+}
+
+.artwork-card[data-artwork="6"] {
+    grid-column: 4 / 5;
+    grid-row: 2 / 3;
+}
 
 
 .artwork-card {
@@ -186,7 +212,8 @@ img {
     border-radius: 16px;
     overflow: visible;
     transform-style: preserve-3d;
-    background: transparent; /* Removes the gray box */
+    background: transparent;
+    /* Removes the gray box */
 }
 
 .artwork-card img {
@@ -194,19 +221,20 @@ img {
     height: 100%;
     object-fit: cover;
     border-radius: 16px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
     transition: transform 0.4s ease, box-shadow 0.4s ease;
 }
 
 .artwork-card:hover img {
     transform: scale(1.08) translateZ(40px) rotateY(-5deg) rotateX(5deg);
-    box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
 }
 
 /* Styles for Stacked Scrolling Animation (Desktop) */
 .artwork-grid-stacked {
     position: relative;
-    height: 100vh; /* Changed from 600vh */
+    height: 100vh;
+    /* Changed from 600vh */
     margin-top: 0;
 }
 
@@ -219,29 +247,37 @@ img {
     display: flex;
     justify-content: center;
     align-items: center;
-    pointer-events: none; /* Prevent click until visible */
+    pointer-events: none;
+    /* Prevent click until visible */
 }
 
 .artwork-card-stacked .artwork-image-container {
     width: 70%;
     max-width: 700px;
-    max-height: 80vh; /* Add this - prevents vertical overflow */
+    max-height: 80vh;
+    /* Add this - prevents vertical overflow */
     height: auto;
     border-radius: 16px;
     overflow: hidden;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-    pointer-events: auto; /* Re-enable clicks on visible images */
-    display: flex; /* Add this */
-    align-items: center; /* Add this */
-    justify-content: center; /* Add this */
+    pointer-events: auto;
+    /* Re-enable clicks on visible images */
+    display: flex;
+    /* Add this */
+    align-items: center;
+    /* Add this */
+    justify-content: center;
+    /* Add this */
 }
 
 .artwork-card-stacked img {
     width: 100%;
     height: 100%;
-    object-fit: contain; /* Change from 'cover' to 'contain' */
+    object-fit: contain;
+    /* Change from 'cover' to 'contain' */
     border-radius: 16px;
-    max-height: 80vh; /* Add this constraint */
+    max-height: 80vh;
+    /* Add this constraint */
 }
 
 .artwork-overlay {
@@ -264,7 +300,8 @@ img {
     background: transparent;
     border: 2px solid #333;
     border-radius: 8px;
-    color: #ccc; /* Changed for better visibility on dark background */
+    color: #ccc;
+    /* Changed for better visibility on dark background */
     font-size: 16px;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -288,7 +325,8 @@ img {
 
 /* Bottom toggle specific styles */
 .view-toggle-bottom {
-    margin-top: 80px; /* Space after gallery */
+    margin-top: 80px;
+    /* Space after gallery */
     margin-bottom: 40px;
 }
 
@@ -323,54 +361,95 @@ img {
         gap: 20px;
     }
 
-    .artwork-card[data-artwork="1"] { grid-area: gallery-a; grid-column: auto; grid-row: auto; }
-    .artwork-card[data-artwork="2"] { grid-area: gallery-b; grid-column: auto; grid-row: auto; }
-    .artwork-card[data-artwork="3"] { grid-area: gallery-c; grid-column: auto; grid-row: auto; }
-    .artwork-card[data-artwork="4"] { grid-area: gallery-d; grid-column: auto; grid-row: auto; }
-    .artwork-card[data-artwork="5"] { grid-area: gallery-e; grid-column: auto; grid-row: auto; }
-    .artwork-card[data-artwork="6"] { grid-area: gallery-f; grid-column: auto; grid-row: auto; }
+    .artwork-card[data-artwork="1"] {
+        grid-area: gallery-a;
+        grid-column: auto;
+        grid-row: auto;
+    }
+
+    .artwork-card[data-artwork="2"] {
+        grid-area: gallery-b;
+        grid-column: auto;
+        grid-row: auto;
+    }
+
+    .artwork-card[data-artwork="3"] {
+        grid-area: gallery-c;
+        grid-column: auto;
+        grid-row: auto;
+    }
+
+    .artwork-card[data-artwork="4"] {
+        grid-area: gallery-d;
+        grid-column: auto;
+        grid-row: auto;
+    }
+
+    .artwork-card[data-artwork="5"] {
+        grid-area: gallery-e;
+        grid-column: auto;
+        grid-row: auto;
+    }
+
+    .artwork-card[data-artwork="6"] {
+        grid-area: gallery-f;
+        grid-column: auto;
+        grid-row: auto;
+    }
 }
 
 @media (max-width: 768px) {
     .artwork-grid-normal {
-        display: grid; /* Ensure it's a grid */
-        grid-template-columns: 1fr; /* Single column on mobile */
-        gap: 20px; /* Add gap between items */
+        display: grid;
+        /* Ensure it's a grid */
+        grid-template-columns: 1fr;
+        /* Single column on mobile */
+        gap: 20px;
+        /* Add gap between items */
         padding: 20px 16px;
     }
 
     .artwork-grid-normal .grid-item {
         width: 100%;
-        height: auto; /* Let height be automatic */
-        grid-column: span 1 !important; /* Ensure it spans only one column */
+        height: auto;
+        /* Let height be automatic */
+        grid-column: span 1 !important;
+        /* Ensure it spans only one column */
     }
 
     .artwork-grid-normal .grid-item img {
         width: 100%;
-        height: auto; /* Maintain aspect ratio */
-        object-fit: contain; /* Prevent cropping */
+        height: auto;
+        /* Maintain aspect ratio */
+        object-fit: contain;
+        /* Prevent cropping */
     }
 
     .artwork-grid-normal {
-        grid-template-columns: 1fr; /* Single column on mobile */
+        grid-template-columns: 1fr;
+        /* Single column on mobile */
         padding: 20px 16px;
     }
 
     .grid-item {
         margin-bottom: 20px;
-        break-inside: avoid; /* Prevents items from breaking across columns */
+        break-inside: avoid;
+        /* Prevents items from breaking across columns */
     }
 
     .grid-item.horizontal,
     .grid-item.portrait {
-        grid-column: span 1; /* All items take one column on mobile */
+        grid-column: span 1;
+        /* All items take one column on mobile */
     }
 
     /* Responsive GSAP Animation */
     .artwork-card-stacked .artwork-image-container {
-        width: 90%; /* More screen usage on mobile */
+        width: 90%;
+        /* More screen usage on mobile */
         max-width: none;
-        max-height: 70vh; /* Ensure fits in viewport */
+        max-height: 70vh;
+        /* Ensure fits in viewport */
     }
 
     /* Mobile View Toggle */
@@ -380,7 +459,7 @@ img {
         background: var(--primary-bg-color);
         z-index: 100;
         padding: 16px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         margin: 0;
     }
 
@@ -396,9 +475,10 @@ img {
     }
 
     .artwork-grid-stacked {
-        min-height: 100vh; /* Ensure proper height on mobile */
+        min-height: 100vh;
+        /* Ensure proper height on mobile */
     }
-    
+
     /* Hide any overflow that might show duplicate content */
     .featured-artworks {
         overflow: hidden;
@@ -407,6 +487,7 @@ img {
 
 /* Universal Mobile Gallery Grid Fix */
 @media (max-width: 768px) {
+
     /* Target all possible gallery containers to enforce a single-column layout */
     .artwork-grid,
     .gallery-grid,
@@ -430,7 +511,8 @@ img {
         height: auto !important;
         margin: 0 !important;
         flex: none !important;
-        padding-bottom: 0 !important; /* Override aspect ratio hacks */
+        padding-bottom: 0 !important;
+        /* Override aspect ratio hacks */
     }
 
     /* Ensure images display correctly without cropping */
@@ -440,14 +522,18 @@ img {
     [class*="gallery"] img {
         width: 100% !important;
         height: auto !important;
-        object-fit: contain !important; /* Use contain to prevent cropping */
-        max-height: 80vh !important; /* Prevent overly tall images */
-        border-radius: 8px; /* Consistent rounding */
+        object-fit: contain !important;
+        /* Use contain to prevent cropping */
+        max-height: 80vh !important;
+        /* Prevent overly tall images */
+        border-radius: 8px;
+        /* Consistent rounding */
     }
 }
 
 /* Universal mobile gallery fix */
 @media (max-width: 768px) {
+
     /* Target all possible gallery containers that are not the main homepage grid */
     main [class*="grid"]:not(.artwork-grid-stacked):not(.artwork-grid-normal),
     .gallery-grid,
@@ -469,8 +555,10 @@ img {
 
 @media (max-width: 768px) {
     .banner {
-        height: 300px; /* Reduce banner height on mobile */
-        background-attachment: scroll; /* Improve mobile performance */
+        height: 300px;
+        /* Reduce banner height on mobile */
+        background-attachment: scroll;
+        /* Improve mobile performance */
     }
 }
 
@@ -534,82 +622,82 @@ img {
     .main-header {
         padding: 0.6rem 0;
     }
-    
+
     .main-header .container {
         flex-direction: column;
         gap: 0.8rem;
         text-align: center;
     }
-    
+
     .main-nav ul {
         flex-wrap: wrap;
         justify-content: center;
         gap: 1.2rem;
     }
-    
+
     .main-nav a {
         font-size: 0.95rem;
         padding: 0.4rem 0;
     }
-    
+
     .logo a {
         font-size: 1.8rem;
     }
-    
+
     .section-title {
         font-size: 2.2rem;
         margin-bottom: 1.5rem;
     }
-    
+
     .artwork-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 1.5rem;
     }
-    
+
     .artwork-card {
         border-radius: 8px;
     }
-    
+
     .artwork-info h3 {
         font-size: 1.2rem;
     }
-    
+
     .artwork-info p {
         font-size: 0.9rem;
     }
-    
+
     .view-series {
         padding: 0.8rem 1.5rem;
         font-size: 0.9rem;
     }
-    
+
     .subscription-form {
         flex-direction: column;
         gap: 0.8rem;
     }
-    
+
     .subscription-form input,
     .subscription-form button {
         padding: 0.9rem;
         font-size: 0.95rem;
     }
-    
+
     .theme-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 1.5rem;
     }
-    
+
     .cta-button {
         padding: 0.9rem 2rem;
         font-size: 0.95rem;
     }
-    
+
     .ready-to-hang h2,
     .gallery-description h2,
     .email-subscription h2 {
         font-size: 2rem;
     }
-    
+
     .footer-sections {
         grid-template-columns: repeat(2, 1fr);
         gap: 1.5rem;
@@ -620,64 +708,64 @@ img {
     .logo a {
         font-size: 1.6rem;
     }
-    
+
     .main-nav ul {
         gap: 1rem;
     }
-    
+
     .main-nav a {
         font-size: 0.9rem;
     }
-    
+
     .section-title {
         font-size: 1.8rem;
     }
-    
+
     .artwork-grid {
         grid-template-columns: 1fr;
         gap: 1.2rem;
     }
-    
+
     .artwork-info h3 {
         font-size: 1.1rem;
     }
-    
+
     .view-series {
         padding: 0.7rem 1.2rem;
         font-size: 0.85rem;
     }
-    
+
     .theme-grid {
         grid-template-columns: 1fr;
         gap: 1.2rem;
     }
-    
+
     .theme-card h3 {
         font-size: 1rem;
     }
-    
+
     .ready-to-hang h2,
     .gallery-description h2,
     .email-subscription h2 {
         font-size: 1.6rem;
     }
-    
+
     .ready-to-hang p,
     .gallery-description p,
     .email-subscription p {
         font-size: 1rem;
     }
-    
+
     .cta-button {
         padding: 0.8rem 1.5rem;
         font-size: 0.9rem;
     }
-    
+
     .footer-sections {
         grid-template-columns: 1fr;
         gap: 1.2rem;
     }
-    
+
     .footer-section h3 {
         font-size: 1.1rem;
     }
@@ -685,7 +773,9 @@ img {
 
 @media (max-width: 768px) {
     .banner {
-        height: 300px; /* Reduce banner height on mobile */
-        background-attachment: scroll; /* Improve mobile performance */
+        height: 300px;
+        /* Reduce banner height on mobile */
+        background-attachment: scroll;
+        /* Improve mobile performance */
     }
 }
