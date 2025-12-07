@@ -686,17 +686,18 @@ function initSphereMode(images) {
     });
 }
 
-// --- Vortex Mode Logic (Tunnel Effect) ---
+// --- Vortex Mode Logic (3D Whirlpool) ---
 function initVortexMode(images) {
     const container = document.getElementById('vortex-container');
     const stage = document.querySelector('.vortex-stage');
     if (stage.children.length > 0) return;
 
     const totalItems = images.length;
-    const tunnelDepth = 3000; // Total depth of the tunnel
-    const spacing = tunnelDepth / totalItems; // Even spacing
-    const maxRadius = 350; // How far out the spiral goes at the back
-    const spiralTurns = 2; // How many full rotations in the spiral
+    const tunnelDepth = 2500; // Total depth of the vortex
+    const spacing = tunnelDepth / totalItems;
+    const maxRadius = 450; // How far out the spiral goes at the back
+    const spiralTurns = 4; // More rotations for better whirlpool effect
+    const funnelTilt = 70; // Degrees - how much images tilt outward (like looking down a funnel)
 
     // Create items
     images.forEach((src, i) => {
@@ -709,9 +710,10 @@ function initVortexMode(images) {
             backgroundImage: `url(${src})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
-            border: '2px solid rgba(255, 255, 255, 0.4)',
-            borderRadius: '10px',
-            boxShadow: '0 0 50px rgba(100, 150, 255, 0.3)'
+            border: '2px solid rgba(255, 255, 255, 0.5)',
+            borderRadius: '8px',
+            boxShadow: '0 0 30px rgba(100, 150, 255, 0.4)',
+            transformOrigin: 'center center'
         });
 
         stage.appendChild(div);
@@ -719,29 +721,19 @@ function initVortexMode(images) {
 
     let scrollProgress = 0;
     let targetScroll = 0;
-    let animationFrame;
 
     // Smooth scroll animation loop
     function animate() {
-        scrollProgress += (targetScroll - scrollProgress) * 0.08; // Smooth easing
+        scrollProgress += (targetScroll - scrollProgress) * 0.06; // Slightly slower for smoother feel
         updateVortex();
-        animationFrame = requestAnimationFrame(animate);
+        requestAnimationFrame(animate);
     }
     animate();
 
     window.addEventListener('wheel', (e) => {
         if (!container.classList.contains('active')) return;
         e.preventDefault();
-
-        // Accumulate scroll
-        targetScroll += e.deltaY * 2;
-
-        // Rotate the stage gently
-        gsap.to(stage, {
-            rotationZ: targetScroll * 0.01,
-            duration: 0.5,
-            ease: 'power2.out'
-        });
+        targetScroll += e.deltaY * 1.5;
     }, { passive: false });
 
     function updateVortex() {
@@ -750,8 +742,7 @@ function initVortexMode(images) {
         items.forEach(item => {
             const i = parseInt(item.dataset.index);
 
-            // Each image has a base position in the tunnel
-            // scrollProgress moves the "camera" forward
+            // Calculate depth position
             let depth = (i * spacing) - scrollProgress;
 
             // Wrap around for infinite scroll
@@ -759,43 +750,58 @@ function initVortexMode(images) {
             while (depth < -spacing / 2) depth += totalLength;
             while (depth > totalLength - spacing / 2) depth -= totalLength;
 
-            // Normalize depth to 0-1 (0 = closest, 1 = farthest)
+            // Normalize depth: 0 = closest (center), 1 = farthest (outer edge of whirlpool)
             const normalizedDepth = Math.max(0, Math.min(1, depth / tunnelDepth));
 
-            // Radius decreases as image gets closer (converges to center)
+            // Radius increases with depth (funnel shape - wide at back, narrow at front)
             const radius = maxRadius * normalizedDepth;
 
-            // Spiral angle increases as image approaches (spiraling inward)
+            // Spiral angle - more turns as depth increases
             const baseAngle = (i / totalItems) * Math.PI * 2;
             const spiralAngle = baseAngle + normalizedDepth * spiralTurns * Math.PI * 2;
 
-            // Position on spiral
+            // Position on spiral (in 2D, we'll add 3D later)
             const x = Math.cos(spiralAngle) * radius;
             const y = Math.sin(spiralAngle) * radius;
 
-            // Size: larger when closer
-            const minSize = 80;
-            const maxSize = 600;
-            const size = maxSize - (maxSize - minSize) * normalizedDepth;
+            // Size: exponentially smaller when far (more dramatic difference)
+            const minSize = 40;
+            const maxSize = 550;
+            // Use exponential scaling for more dramatic size difference
+            const sizeProgress = Math.pow(1 - normalizedDepth, 2);
+            const size = minSize + (maxSize - minSize) * sizeProgress;
 
-            // Opacity: fade in from distance, full at middle, fade out when passing
+            // Opacity: fully visible in the middle range, fade at extremes
             let opacity = 1;
-            if (normalizedDepth > 0.85) {
-                opacity = (1 - normalizedDepth) / 0.15; // Fade in from far
-            } else if (normalizedDepth < 0.05) {
-                opacity = normalizedDepth / 0.05; // Fade out when passing
+            if (normalizedDepth > 0.9) {
+                opacity = (1 - normalizedDepth) / 0.1; // Fade in at far end
+            } else if (normalizedDepth < 0.03) {
+                opacity = normalizedDepth / 0.03; // Fade out when passing through
             }
 
-            // Z-index: closer items on top
+            // 3D rotations for funnel/whirlpool effect
+            // rotateY tilts the image outward based on spiral angle
+            // rotateX tilts it "backward" into the funnel
+            const tiltAmount = funnelTilt * normalizedDepth; // More tilt when farther
+
+            // The direction of tilt depends on position in spiral
+            const rotateY = Math.cos(spiralAngle) * tiltAmount;
+            const rotateX = Math.sin(spiralAngle) * tiltAmount;
+            const rotateZ = spiralAngle * (180 / Math.PI) * 0.3; // Gentle rotation along spiral
+
+            // Z position for proper depth sorting
+            const zPos = -depth;
+
+            // Z-index: closer items render on top
             const zIndex = Math.round((1 - normalizedDepth) * 100);
 
-            // Apply transforms
+            // Apply all transforms
             Object.assign(item.style, {
                 width: `${size}px`,
                 height: `${size}px`,
                 left: `${x - size / 2}px`,
                 top: `${y - size / 2}px`,
-                transform: `translateZ(${-depth}px) rotateZ(${spiralAngle * 15}deg)`,
+                transform: `translateZ(${zPos}px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) rotateZ(${rotateZ}deg)`,
                 opacity: Math.max(0, Math.min(1, opacity)),
                 zIndex: zIndex
             });
