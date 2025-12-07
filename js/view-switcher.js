@@ -72,6 +72,7 @@ function initViewSwitcher() {
 
 function switchMode(mode, images) {
     const mainSection = document.querySelector('.featured-artworks');
+    const showcaseSection = document.querySelector('.showcase-section');
 
     // Cleanup previous active effect if it exists
     if (currentEffectInstance) {
@@ -91,12 +92,14 @@ function switchMode(mode, images) {
         // So we leave them for now unless they are refactored.
     });
 
-    // Reset Main Section
+    // Reset Main Section and Showcase
     if (mainSection) mainSection.style.display = 'none';
+    if (showcaseSection) showcaseSection.style.display = 'none';
     document.body.style.overflow = 'hidden';
 
     if (mode === 'default') {
         if (mainSection) mainSection.style.display = 'block';
+        if (showcaseSection) showcaseSection.style.display = 'block';
         document.body.style.overflow = 'auto';
     } else {
         const container = document.getElementById(`${mode}-container`);
@@ -587,69 +590,84 @@ function initCubeMode(images) {
 
 // --- Sphere Mode Logic (Fixed) ---
 function initSphereMode(images) {
+    const container = document.getElementById('sphere-container');
     const stage = document.querySelector('.sphere-stage');
     if (stage.children.length > 0) return;
 
-    const radius = 500;
+    const radius = 350; // Sphere radius
     const count = images.length;
+    const imageSize = 150; // Size of each image
 
-    // Fibonacci Sphere Distribution
-    const phi = Math.PI * (3 - Math.sqrt(5)); // Golden angle
+    // Center the stage in the container
+    gsap.set(stage, {
+        position: 'absolute',
+        left: '50%',
+        top: '50%',
+        xPercent: -50,
+        yPercent: -50,
+        width: 0,
+        height: 0,
+        transformStyle: 'preserve-3d'
+    });
+
+    // Fibonacci Sphere Distribution - evenly distributes points on a sphere
+    const phi = Math.PI * (3 - Math.sqrt(5)); // Golden angle ~137.5 degrees
 
     images.forEach((src, i) => {
         const div = document.createElement('div');
         div.className = 'sphere-item';
-        div.style.backgroundImage = `url(${src})`;
+
+        Object.assign(div.style, {
+            position: 'absolute',
+            width: `${imageSize}px`,
+            height: `${imageSize}px`,
+            backgroundImage: `url(${src})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            border: '2px solid rgba(255, 255, 255, 0.3)',
+            borderRadius: '8px',
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5)',
+            cursor: 'default'
+        });
+
         stage.appendChild(div);
 
-        const y = 1 - (i / (count - 1)) * 2; // y goes from 1 to -1
-        const radiusAtY = Math.sqrt(1 - y * y); // radius at y
-
+        // Fibonacci sphere point distribution
+        const y = 1 - (i / (count - 1 || 1)) * 2; // y from 1 to -1
+        const radiusAtY = Math.sqrt(1 - y * y); // radius at this y level
         const theta = phi * i; // golden angle increment
 
         const x = Math.cos(theta) * radiusAtY;
         const z = Math.sin(theta) * radiusAtY;
 
-        // Position & Rotation
-        // We want images to face OUTWARDS from the center
-        // The normal vector is (x, y, z)
-
-        // Calculate rotation to face normal
-        // Y rotation (yaw)
+        // Calculate rotation to face outward from center
         const rotY = Math.atan2(x, z) * (180 / Math.PI);
-        // X rotation (pitch)
         const rotX = -Math.atan2(y, Math.sqrt(x * x + z * z)) * (180 / Math.PI);
 
+        // Position and rotate - center image on its position
         gsap.set(div, {
-            x: x * radius,
-            y: y * radius,
+            x: x * radius - imageSize / 2,
+            y: y * radius - imageSize / 2,
             z: z * radius,
             rotationY: rotY,
             rotationX: rotX,
-            transformOrigin: "50% 50%"
-        });
-
-        // Click to bring to front?
-        div.addEventListener('click', () => {
-            // Rotate sphere so this item is at front (0,0,radius)
-            // This requires complex math to reverse the rotation. 
-            // For now, just scale up.
-            gsap.to(div, { scale: 1.5, zIndex: 1000, duration: 0.3, yoyo: true, repeat: 1 });
+            transformOrigin: '50% 50%'
         });
     });
 
-    // Draggable Sphere
+    // Draggable Sphere with inertia
     let rotationX = 0;
     let rotationY = 0;
 
     Draggable.create(document.createElement('div'), {
-        trigger: document.getElementById('sphere-container'),
-        type: "x,y",
+        trigger: container,
+        type: 'x,y',
         inertia: true,
+        cursor: 'grab',
+        activeCursor: 'grabbing',
         onDrag: function () {
             rotationY += this.deltaX * 0.3;
             rotationX -= this.deltaY * 0.3;
-
             gsap.to(stage, {
                 rotationY: rotationY,
                 rotationX: rotationX,

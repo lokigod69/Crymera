@@ -240,6 +240,11 @@
     pointer-events: none;
 }
 
+#cube-container {
+    background: #000;
+    cursor: grab;
+}
+
 #cube-container:active {
     cursor: grabbing;
 }
@@ -276,11 +281,7 @@
     cursor: pointer;
 }
 
-.cube-face-item:hover {
-    transform: scale(1.05);
-    border-color: #fff;
-    z-index: 10;
-}
+/* No hover effect on cube items */
 
 /* Sphere Mode */
 #sphere-container {
