@@ -284,10 +284,11 @@
 /* No hover effect on cube items */
 
 /* Sphere Mode */
-#sphere-container {
+#sphere-container.active {
     perspective: 1500px;
     background: radial-gradient(circle at center, #111 0%, #000 100%);
-    display: flex;
+    display: flex !important;
+    /* Override .gallery-mode-container.active */
     justify-content: center;
     align-items: center;
     cursor: grab;
@@ -325,12 +326,13 @@
 }
 
 /* Vortex Mode */
-#vortex-container {
+#vortex-container.active {
     perspective: 1500px;
     perspective-origin: 50% 50%;
     background: radial-gradient(circle at center, #0a0a15 0%, #000 100%);
     overflow: hidden;
-    display: flex;
+    display: flex !important;
+    /* Override .gallery-mode-container.active */
     justify-content: center;
     align-items: center;
 }
