@@ -693,21 +693,12 @@ function initVortexMode(images) {
     if (stage.children.length > 0) return;
 
     const totalItems = images.length;
-    const spacing = 600; // Z-distance between images
-    const maxRadius = 400; // Max spiral radius when far away
-    const spiralTightness = 0.8; // How much spiral angle increases per item
+    const tunnelDepth = 3000; // Total depth of the tunnel
+    const spacing = tunnelDepth / totalItems; // Even spacing
+    const maxRadius = 350; // How far out the spiral goes at the back
+    const spiralTurns = 2; // How many full rotations in the spiral
 
-    // Center the stage
-    gsap.set(stage, {
-        position: 'absolute',
-        left: '50%',
-        top: '50%',
-        xPercent: -50,
-        yPercent: -50,
-        transformStyle: 'preserve-3d'
-    });
-
-    // Create items with initial styling
+    // Create items
     images.forEach((src, i) => {
         const div = document.createElement('div');
         div.className = 'vortex-item';
@@ -718,93 +709,95 @@ function initVortexMode(images) {
             backgroundImage: `url(${src})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
-            borderRadius: '8px',
-            boxShadow: '0 0 30px rgba(0, 0, 0, 0.5)'
+            border: '2px solid rgba(255, 255, 255, 0.4)',
+            borderRadius: '10px',
+            boxShadow: '0 0 50px rgba(100, 150, 255, 0.3)'
         });
 
         stage.appendChild(div);
     });
 
     let scrollProgress = 0;
-    const loopLength = totalItems * spacing;
+    let targetScroll = 0;
+    let animationFrame;
 
-    // Initial render
-    updateVortex();
+    // Smooth scroll animation loop
+    function animate() {
+        scrollProgress += (targetScroll - scrollProgress) * 0.08; // Smooth easing
+        updateVortex();
+        animationFrame = requestAnimationFrame(animate);
+    }
+    animate();
 
     window.addEventListener('wheel', (e) => {
         if (!container.classList.contains('active')) return;
         e.preventDefault();
 
-        // Scroll moves camera forward through the tunnel
-        scrollProgress += e.deltaY * 1.5;
+        // Accumulate scroll
+        targetScroll += e.deltaY * 2;
 
-        // Gentle rotation of the whole stage
+        // Rotate the stage gently
         gsap.to(stage, {
-            rotationZ: scrollProgress * 0.02,
-            duration: 0.3,
-            ease: 'power1.out'
+            rotationZ: targetScroll * 0.01,
+            duration: 0.5,
+            ease: 'power2.out'
         });
-
-        updateVortex();
     }, { passive: false });
 
     function updateVortex() {
-        const items = document.querySelectorAll('.vortex-item');
+        const items = stage.querySelectorAll('.vortex-item');
 
         items.forEach(item => {
             const i = parseInt(item.dataset.index);
 
-            // Calculate Z position (how far away this image is)
-            // Negative Z = in front (coming towards viewer)
-            // Positive Z = behind (already passed)
-            let itemZ = (i * spacing) - scrollProgress;
+            // Each image has a base position in the tunnel
+            // scrollProgress moves the "camera" forward
+            let depth = (i * spacing) - scrollProgress;
 
             // Wrap around for infinite scroll
-            while (itemZ < -spacing) {
-                itemZ += loopLength;
-            }
-            while (itemZ > loopLength - spacing) {
-                itemZ -= loopLength;
-            }
+            const totalLength = totalItems * spacing;
+            while (depth < -spacing / 2) depth += totalLength;
+            while (depth > totalLength - spacing / 2) depth -= totalLength;
 
-            // Calculate spiral position based on Z depth
-            // As Z decreases (comes closer), radius decreases (converges to center)
-            const progress = Math.max(0, Math.min(1, itemZ / (spacing * (totalItems - 1))));
-            const currentRadius = maxRadius * progress; // Radius shrinks as it approaches
+            // Normalize depth to 0-1 (0 = closest, 1 = farthest)
+            const normalizedDepth = Math.max(0, Math.min(1, depth / tunnelDepth));
 
-            // Spiral angle - each image has different angle, and angle increases as it approaches
-            const baseAngle = i * (Math.PI * 2 / Math.max(4, totalItems));
-            const spiralAngle = baseAngle + (1 - progress) * spiralTightness * Math.PI * 2;
+            // Radius decreases as image gets closer (converges to center)
+            const radius = maxRadius * normalizedDepth;
 
-            const x = Math.cos(spiralAngle) * currentRadius;
-            const y = Math.sin(spiralAngle) * currentRadius;
+            // Spiral angle increases as image approaches (spiraling inward)
+            const baseAngle = (i / totalItems) * Math.PI * 2;
+            const spiralAngle = baseAngle + normalizedDepth * spiralTurns * Math.PI * 2;
 
-            // Calculate size - larger when closer
-            const minSize = 100;
-            const maxSize = 500;
-            const size = minSize + (maxSize - minSize) * (1 - progress);
+            // Position on spiral
+            const x = Math.cos(spiralAngle) * radius;
+            const y = Math.sin(spiralAngle) * radius;
 
-            // Opacity - fade in from distance, fade out when very close
+            // Size: larger when closer
+            const minSize = 80;
+            const maxSize = 600;
+            const size = maxSize - (maxSize - minSize) * normalizedDepth;
+
+            // Opacity: fade in from distance, full at middle, fade out when passing
             let opacity = 1;
-            if (progress > 0.9) {
-                opacity = (1 - progress) * 10; // Fade in from far away
-            }
-            if (progress < 0.1) {
-                opacity = progress * 10; // Fade out when passing through
+            if (normalizedDepth > 0.85) {
+                opacity = (1 - normalizedDepth) / 0.15; // Fade in from far
+            } else if (normalizedDepth < 0.05) {
+                opacity = normalizedDepth / 0.05; // Fade out when passing
             }
 
-            // Rotation to face the viewer
-            const rotationZ = spiralAngle * (180 / Math.PI);
+            // Z-index: closer items on top
+            const zIndex = Math.round((1 - normalizedDepth) * 100);
 
-            gsap.set(item, {
-                x: x - size / 2,
-                y: y - size / 2,
-                z: -itemZ, // Negative so larger Z stays behind visually
-                width: size,
-                height: size,
-                rotationZ: rotationZ * 0.5, // Gentle rotation
+            // Apply transforms
+            Object.assign(item.style, {
+                width: `${size}px`,
+                height: `${size}px`,
+                left: `${x - size / 2}px`,
+                top: `${y - size / 2}px`,
+                transform: `translateZ(${-depth}px) rotateZ(${spiralAngle * 15}deg)`,
                 opacity: Math.max(0, Math.min(1, opacity)),
-                zIndex: Math.round(1000 - progress * 1000)
+                zIndex: zIndex
             });
         });
     }
