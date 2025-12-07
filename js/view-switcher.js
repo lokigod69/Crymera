@@ -686,92 +686,128 @@ function initSphereMode(images) {
     });
 }
 
-// --- Vortex Mode Logic (Fixed) ---
-// --- Vortex Mode Logic (Infinite) ---
+// --- Vortex Mode Logic (Tunnel Effect) ---
 function initVortexMode(images) {
+    const container = document.getElementById('vortex-container');
     const stage = document.querySelector('.vortex-stage');
     if (stage.children.length > 0) return;
 
-    const spacing = 800; // More spacing
-    const radius = 500;
     const totalItems = images.length;
+    const spacing = 600; // Z-distance between images
+    const maxRadius = 400; // Max spiral radius when far away
+    const spiralTightness = 0.8; // How much spiral angle increases per item
 
-    // Create items
+    // Center the stage
+    gsap.set(stage, {
+        position: 'absolute',
+        left: '50%',
+        top: '50%',
+        xPercent: -50,
+        yPercent: -50,
+        transformStyle: 'preserve-3d'
+    });
+
+    // Create items with initial styling
     images.forEach((src, i) => {
         const div = document.createElement('div');
         div.className = 'vortex-item';
-        div.style.backgroundImage = `url(${src})`;
-        // Store initial index for calculation
         div.dataset.index = i;
+
+        Object.assign(div.style, {
+            position: 'absolute',
+            backgroundImage: `url(${src})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            borderRadius: '8px',
+            boxShadow: '0 0 30px rgba(0, 0, 0, 0.5)'
+        });
+
         stage.appendChild(div);
     });
 
-    let scrollZ = 0;
+    let scrollProgress = 0;
+    const loopLength = totalItems * spacing;
 
     // Initial render
-    updateVortex(0);
+    updateVortex();
 
     window.addEventListener('wheel', (e) => {
-        if (!document.getElementById('vortex-container').classList.contains('active')) return;
+        if (!container.classList.contains('active')) return;
+        e.preventDefault();
 
-        // Move forward
-        scrollZ += e.deltaY * 2;
+        // Scroll moves camera forward through the tunnel
+        scrollProgress += e.deltaY * 1.5;
 
+        // Gentle rotation of the whole stage
         gsap.to(stage, {
-            rotationZ: scrollZ * 0.05, // Gentle spin
-            duration: 0.5,
-            ease: 'power1.out',
-            onUpdate: () => updateVortex(scrollZ)
+            rotationZ: scrollProgress * 0.02,
+            duration: 0.3,
+            ease: 'power1.out'
         });
-    });
 
-    function updateVortex(currentZ) {
+        updateVortex();
+    }, { passive: false });
+
+    function updateVortex() {
         const items = document.querySelectorAll('.vortex-item');
-        const loopLength = totalItems * spacing;
 
         items.forEach(item => {
             const i = parseInt(item.dataset.index);
 
-            // Calculate Z position based on scroll
-            // We want items to loop. 
-            // Base Z is -i * spacing.
-            // Add currentZ.
-            let itemZ = (-i * spacing) + currentZ;
+            // Calculate Z position (how far away this image is)
+            // Negative Z = in front (coming towards viewer)
+            // Positive Z = behind (already passed)
+            let itemZ = (i * spacing) - scrollProgress;
 
-            // Wrap around logic
-            // If itemZ is > 500 (behind camera), move it to the far back
-            while (itemZ > 500) {
-                itemZ -= loopLength;
-            }
-            // If itemZ is too far back (optional, for reverse scroll), move to front
-            while (itemZ < -loopLength + 500) {
+            // Wrap around for infinite scroll
+            while (itemZ < -spacing) {
                 itemZ += loopLength;
             }
+            while (itemZ > loopLength - spacing) {
+                itemZ -= loopLength;
+            }
 
-            const angle = i * 0.5; // Spiral angle
-            const x = Math.cos(angle) * radius;
-            const y = Math.sin(angle) * radius;
+            // Calculate spiral position based on Z depth
+            // As Z decreases (comes closer), radius decreases (converges to center)
+            const progress = Math.max(0, Math.min(1, itemZ / (spacing * (totalItems - 1))));
+            const currentRadius = maxRadius * progress; // Radius shrinks as it approaches
 
-            // Opacity fade
+            // Spiral angle - each image has different angle, and angle increases as it approaches
+            const baseAngle = i * (Math.PI * 2 / Math.max(4, totalItems));
+            const spiralAngle = baseAngle + (1 - progress) * spiralTightness * Math.PI * 2;
+
+            const x = Math.cos(spiralAngle) * currentRadius;
+            const y = Math.sin(spiralAngle) * currentRadius;
+
+            // Calculate size - larger when closer
+            const minSize = 100;
+            const maxSize = 500;
+            const size = minSize + (maxSize - minSize) * (1 - progress);
+
+            // Opacity - fade in from distance, fade out when very close
             let opacity = 1;
-            if (itemZ > 0) opacity = 1 - (itemZ / 500); // Fade out as it passes camera
-            if (itemZ < -3000) opacity = 1 - ((-itemZ - 3000) / 2000); // Fade out in distance
+            if (progress > 0.9) {
+                opacity = (1 - progress) * 10; // Fade in from far away
+            }
+            if (progress < 0.1) {
+                opacity = progress * 10; // Fade out when passing through
+            }
+
+            // Rotation to face the viewer
+            const rotationZ = spiralAngle * (180 / Math.PI);
 
             gsap.set(item, {
-                x: x,
-                y: y,
-                z: itemZ,
-                rotationZ: angle * (180 / Math.PI),
-                opacity: opacity
+                x: x - size / 2,
+                y: y - size / 2,
+                z: -itemZ, // Negative so larger Z stays behind visually
+                width: size,
+                height: size,
+                rotationZ: rotationZ * 0.5, // Gentle rotation
+                opacity: Math.max(0, Math.min(1, opacity)),
+                zIndex: Math.round(1000 - progress * 1000)
             });
         });
     }
-
-    // Center stage
-    gsap.set(stage, {
-        x: window.innerWidth / 2 - 150,
-        y: window.innerHeight / 2 - 100
-    });
 }
 
 // --- Network Mode Logic (Parallax) ---
