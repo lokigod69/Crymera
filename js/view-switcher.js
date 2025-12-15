@@ -701,26 +701,26 @@ function initVortexMode(images) {
         baseSpacing: 400,          // Base spacing between images
         spacingGrowth: 1.12,       // Exponential growth factor for distance
 
-        // Tail visibility settings - the key change
-        tailMinRadius: 80,         // Minimum radius for tail items (not directly behind center)
-        tailMaxRadius: 450,        // Maximum radius at the far end of tail
-        tailSpread: 0.4,           // How much the spiral spreads outward (0-1)
+        // Tail visibility settings - STRETCHED OUT for whirlwind effect
+        tailMinRadius: 200,        // Start spreading out quickly from center
+        tailMaxRadius: 800,        // Maximum radius - extends well outside center image
+        tailSpread: 0.8,           // Strong vertical spread (0-1)
 
-        spiralTurns: 2.5,          // Number of full spiral rotations in the tail
-        funnelTilt: 45,            // How much images tilt to face camera
-        minSize: 50,               // Minimum image size (far)
+        spiralTurns: 3.5,          // More spiral rotations for dramatic whirlwind
+        funnelTilt: 50,            // How much images tilt to face camera
+        minSize: 40,               // Smallest images at the tail end
         maxSize: 500,              // Maximum image size (close/full display)
         fullDisplayZone: 0.02,     // Zone where image is at full size (centered)
-        transitionZone: 0.12,      // Zone where it transitions from tail to center
-        fadeInStart: 0.9,          // Start fading in from this depth
+        transitionZone: 0.08,      // Quick transition out to tail
+        fadeInStart: 0.92,         // Fade in near the back
 
-        // Tail direction oscillation
-        tailSwingSpeed: 0.0003,    // How fast the tail direction swings around
-        tailSwingAmount: Math.PI * 0.6,  // How much the tail direction swings (radians)
+        // Tail direction oscillation - more dramatic swing
+        tailSwingSpeed: 0.0004,    // Slightly faster swing
+        tailSwingAmount: Math.PI * 0.8,  // Wider swing arc (nearly full semicircle)
 
         // Individual item oscillation
-        oscillationSpeed: 0.0006,  // Speed of individual item oscillation
-        oscillationAmount: 20      // Max pixels of oscillation
+        oscillationSpeed: 0.0008,  // Speed of individual item oscillation
+        oscillationAmount: 30      // More oscillation for liveliness
     };
 
     // Pre-calculate cumulative spacing for exponential growth
