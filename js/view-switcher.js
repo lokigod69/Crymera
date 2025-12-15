@@ -686,18 +686,38 @@ function initSphereMode(images) {
     });
 }
 
-// --- Vortex Mode Logic (3D Whirlpool) ---
+// --- Vortex Mode Logic (3D Spiral Tunnel) ---
 function initVortexMode(images) {
     const container = document.getElementById('vortex-container');
     const stage = document.querySelector('.vortex-stage');
     if (stage.children.length > 0) return;
 
     const totalItems = images.length;
-    const tunnelDepth = 2500; // Total depth of the vortex
-    const spacing = tunnelDepth / totalItems;
-    const maxRadius = 450; // How far out the spiral goes at the back
-    const spiralTurns = 4; // More rotations for better whirlpool effect
-    const funnelTilt = 70; // Degrees - how much images tilt outward (like looking down a funnel)
+
+    // Configuration for the spiral vortex
+    const config = {
+        tunnelDepth: 3500,         // Total depth of the vortex tunnel
+        baseSpacing: 400,          // Base spacing between images
+        spacingGrowth: 1.15,       // Exponential growth factor for distance (further = more spread)
+        maxRadius: 350,            // Maximum radius of spiral at the back
+        spiralTurns: 3,            // Number of full spiral rotations
+        spiralTiltAngle: 25,       // Degrees - tilt of the spiral helix (left/right tail effect)
+        funnelTilt: 55,            // How much images tilt outward
+        minSize: 60,               // Minimum image size (far)
+        maxSize: 500,              // Maximum image size (close/full display)
+        fullDisplayZone: 0.08,     // Zone (0-1) where image is at full size before fading
+        fadeOutZone: 0.03,         // Zone for fade out after full display
+        fadeInStart: 0.85          // Start fading in from this depth
+    };
+
+    // Pre-calculate cumulative spacing for exponential growth
+    const cumulativeSpacing = [0];
+    for (let i = 1; i <= totalItems; i++) {
+        const prevSpacing = cumulativeSpacing[i - 1];
+        const additionalSpacing = config.baseSpacing * Math.pow(config.spacingGrowth, i - 1);
+        cumulativeSpacing.push(prevSpacing + additionalSpacing);
+    }
+    const totalLength = cumulativeSpacing[totalItems];
 
     // Create items
     images.forEach((src, i) => {
@@ -711,8 +731,8 @@ function initVortexMode(images) {
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             border: '2px solid rgba(255, 255, 255, 0.5)',
-            borderRadius: '8px',
-            boxShadow: '0 0 30px rgba(100, 150, 255, 0.4)',
+            borderRadius: '10px',
+            boxShadow: '0 0 40px rgba(100, 150, 255, 0.5)',
             transformOrigin: 'center center'
         });
 
@@ -724,7 +744,7 @@ function initVortexMode(images) {
 
     // Smooth scroll animation loop
     function animate() {
-        scrollProgress += (targetScroll - scrollProgress) * 0.06; // Slightly slower for smoother feel
+        scrollProgress += (targetScroll - scrollProgress) * 0.08;
         updateVortex();
         requestAnimationFrame(animate);
     }
@@ -733,7 +753,8 @@ function initVortexMode(images) {
     window.addEventListener('wheel', (e) => {
         if (!container.classList.contains('active')) return;
         e.preventDefault();
-        targetScroll += e.deltaY * 1.5;
+        // Sequential scrolling - move through items one at a time
+        targetScroll += e.deltaY * 0.8;
     }, { passive: false });
 
     function updateVortex() {
@@ -742,52 +763,74 @@ function initVortexMode(images) {
         items.forEach(item => {
             const i = parseInt(item.dataset.index);
 
-            // Calculate depth position
-            let depth = (i * spacing) - scrollProgress;
+            // Calculate depth using cumulative spacing for exponential distribution
+            let depth = cumulativeSpacing[i] - scrollProgress;
 
             // Wrap around for infinite scroll
-            const totalLength = totalItems * spacing;
-            while (depth < -spacing / 2) depth += totalLength;
-            while (depth > totalLength - spacing / 2) depth -= totalLength;
+            while (depth < -config.baseSpacing) depth += totalLength;
+            while (depth > totalLength - config.baseSpacing) depth -= totalLength;
 
-            // Normalize depth: 0 = closest (center), 1 = farthest (outer edge of whirlpool)
-            const normalizedDepth = Math.max(0, Math.min(1, depth / tunnelDepth));
+            // Normalize depth: 0 = closest (center), 1 = farthest
+            const normalizedDepth = Math.max(0, Math.min(1, depth / totalLength));
 
-            // Radius increases with depth (funnel shape - wide at back, narrow at front)
-            const radius = maxRadius * normalizedDepth;
+            // Radius increases with depth (funnel shape) with slight variation
+            const radius = config.maxRadius * Math.pow(normalizedDepth, 0.8);
 
-            // Spiral angle - more turns as depth increases
-            const baseAngle = (i / totalItems) * Math.PI * 2;
-            const spiralAngle = baseAngle + normalizedDepth * spiralTurns * Math.PI * 2;
+            // Spiral angle with progressive rotation
+            const baseAngle = (i / totalItems) * Math.PI * 2 * 0.5; // Less initial spread
+            const spiralAngle = baseAngle + normalizedDepth * config.spiralTurns * Math.PI * 2;
 
-            // Position on spiral (in 2D, we'll add 3D later)
+            // Position on spiral in 2D plane
             const x = Math.cos(spiralAngle) * radius;
-            const y = Math.sin(spiralAngle) * radius;
+            const baseY = Math.sin(spiralAngle) * radius;
 
-            // Size: exponentially smaller when far (more dramatic difference)
-            const minSize = 40;
-            const maxSize = 550;
-            // Use exponential scaling for more dramatic size difference
-            const sizeProgress = Math.pow(1 - normalizedDepth, 2);
-            const size = minSize + (maxSize - minSize) * sizeProgress;
+            // Apply spiral tilt - creates the "tail" effect swinging left/right
+            const tiltRadian = config.spiralTiltAngle * (Math.PI / 180);
+            // The Y position sways based on depth and spiral position
+            const tiltOffset = Math.sin(spiralAngle * 0.5 + normalizedDepth * Math.PI) * radius * 0.3;
+            const y = baseY + tiltOffset;
 
-            // Opacity: fully visible in the middle range, fade at extremes
+            // Size calculation with full display zone
+            // Images should be at full size when closer, scale down as they go further
+            let sizeProgress;
+            if (normalizedDepth < config.fullDisplayZone + config.fadeOutZone) {
+                // In or near the full display zone - full size or transitioning
+                sizeProgress = 1;
+            } else {
+                // Scale down based on depth beyond the display zone
+                const depthBeyondDisplay = normalizedDepth - config.fullDisplayZone - config.fadeOutZone;
+                const remainingDepthRange = 1 - config.fullDisplayZone - config.fadeOutZone;
+                const scaleRatio = depthBeyondDisplay / remainingDepthRange;
+                sizeProgress = Math.pow(1 - scaleRatio, 1.5);
+            }
+            const size = config.minSize + (config.maxSize - config.minSize) * sizeProgress;
+
+            // Opacity logic: 
+            // - Full opacity while approaching and at full size
+            // - Only fade out AFTER reaching full display
+            // - Fade in from the back
             let opacity = 1;
-            if (normalizedDepth > 0.9) {
-                opacity = (1 - normalizedDepth) / 0.1; // Fade in at far end
-            } else if (normalizedDepth < 0.03) {
-                opacity = normalizedDepth / 0.03; // Fade out when passing through
+            if (normalizedDepth > config.fadeInStart) {
+                // Fade in from the back
+                opacity = (1 - normalizedDepth) / (1 - config.fadeInStart);
+            } else if (normalizedDepth < config.fadeOutZone) {
+                // Fade out only after passing through full display zone
+                opacity = normalizedDepth / config.fadeOutZone;
+            }
+            // Full opacity in the display zone - no blur or fade until fully shown
+            if (normalizedDepth >= config.fadeOutZone && normalizedDepth <= config.fullDisplayZone + config.fadeOutZone) {
+                opacity = 1;
             }
 
-            // 3D rotations for funnel/whirlpool effect
-            // rotateY tilts the image outward based on spiral angle
-            // rotateX tilts it "backward" into the funnel
-            const tiltAmount = funnelTilt * normalizedDepth; // More tilt when farther
-
-            // The direction of tilt depends on position in spiral
+            // 3D rotations for dynamic spiral effect
+            // Apply tilt based on position in spiral
+            const tiltAmount = config.funnelTilt * normalizedDepth;
             const rotateY = Math.cos(spiralAngle) * tiltAmount;
             const rotateX = Math.sin(spiralAngle) * tiltAmount;
-            const rotateZ = spiralAngle * (180 / Math.PI) * 0.3; // Gentle rotation along spiral
+
+            // Add extra Z rotation for the spiral "twist" effect
+            const rotateZ = (spiralAngle * (180 / Math.PI) * 0.2) +
+                (Math.sin(normalizedDepth * Math.PI * 2) * 5); // Gentle oscillation
 
             // Z position for proper depth sorting
             const zPos = -depth;
@@ -803,7 +846,8 @@ function initVortexMode(images) {
                 top: `${y - size / 2}px`,
                 transform: `translateZ(${zPos}px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) rotateZ(${rotateZ}deg)`,
                 opacity: Math.max(0, Math.min(1, opacity)),
-                zIndex: zIndex
+                zIndex: zIndex,
+                filter: opacity < 1 ? `blur(${(1 - opacity) * 2}px)` : 'none'
             });
         });
     }
