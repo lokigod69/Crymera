@@ -697,33 +697,31 @@ function initVortexMode(images) {
 
     // Configuration for the spiral vortex with visible tail
     const config = {
-        tunnelDepth: 3500,         // Total depth of the vortex tunnel
-        baseSpacing: 400,          // Base spacing between images
-        spacingGrowth: 1.12,       // Exponential growth factor for distance
+        tunnelDepth: 3500,
+        baseSpacing: 400,
+        spacingGrowth: 1.12,
 
-        // Tail visibility settings - STRETCHED OUT for whirlwind effect
-        tailMinRadius: 200,        // Start spreading out quickly from center
-        tailMaxRadius: 800,        // Maximum radius - extends well outside center image
-        tailSpread: 0.8,           // Strong vertical spread (0-1)
+        // Tail visibility - MUCH LARGER radius for small images
+        tailMinRadius: 150,        // Start of tail radius
+        tailMaxRadius: 1500,       // Maximum radius for smallest/deepest images (5x larger!)
+        tailSpread: 0.7,           // Vertical spread factor
 
-        spiralTurns: 3.5,          // More spiral rotations for dramatic whirlwind
-        funnelTilt: 50,            // How much images tilt to face camera
-        minSize: 40,               // Smallest images at the tail end
-        maxSize: 500,              // Maximum image size (close/full display)
-        fullDisplayZone: 0.02,     // Zone where image is at full size (centered)
-        transitionZone: 0.08,      // Quick transition out to tail
-        fadeInStart: 0.92,         // Fade in near the back
+        spiralTurns: 4,            // More spiral rotations
+        funnelTilt: 40,            // Tilt to face camera
+        minSize: 35,               // Smallest images at tail end
+        maxSize: 500,              // Full size at center
 
-        // Tail direction oscillation - more dramatic swing
-        tailSwingSpeed: 0.0004,    // Slightly faster swing
-        tailSwingAmount: Math.PI * 0.8,  // Wider swing arc (nearly full semicircle)
+        // Zone definitions
+        fullDisplayZone: 0.03,     // When image is at perfect center display
+        transitionZone: 0.15,      // Transition from tail to center
 
-        // Individual item oscillation
-        oscillationSpeed: 0.0008,  // Speed of individual item oscillation
-        oscillationAmount: 30      // More oscillation for liveliness
+        // Animation
+        tailSwingSpeed: 0.0003,
+        oscillationSpeed: 0.0006,
+        oscillationAmount: 25
     };
 
-    // Pre-calculate cumulative spacing for exponential growth
+    // Pre-calculate cumulative spacing
     const cumulativeSpacing = [0];
     for (let i = 1; i <= totalItems; i++) {
         const prevSpacing = cumulativeSpacing[i - 1];
@@ -732,17 +730,14 @@ function initVortexMode(images) {
     }
     const totalLength = cumulativeSpacing[totalItems];
 
-    // Random starting direction for the tail (which side of center it starts from)
+    // Random starting direction for the tail
     const baseTailAngle = Math.random() * Math.PI * 2;
 
     // Generate random offsets per item
     const itemRandomData = images.map((_, i) => ({
-        // Small angle variation per item (so they don't line up perfectly)
-        angleVariation: (Math.random() - 0.5) * 0.4,
-        // Random oscillation phase
+        angleVariation: (Math.random() - 0.5) * 0.5,
         oscillationPhase: Math.random() * Math.PI * 2,
-        // Random oscillation speed multiplier
-        oscillationSpeedMult: 0.8 + Math.random() * 0.4
+        oscillationSpeedMult: 0.7 + Math.random() * 0.6
     }));
 
     // Create items
@@ -768,7 +763,6 @@ function initVortexMode(images) {
     let scrollProgress = 0;
     let targetScroll = 0;
 
-    // Smooth scroll animation loop
     function animate() {
         scrollProgress += (targetScroll - scrollProgress) * 0.08;
         updateVortex();
@@ -787,7 +781,7 @@ function initVortexMode(images) {
         const currentTime = performance.now();
         const elapsedTime = currentTime - startTime;
 
-        // The BOTTOM of the vortex (deepest/smallest items) drives the movement
+        // Whirlwind base rotation
         const baseWhirlwindAngle = elapsedTime * config.tailSwingSpeed * 3;
 
         items.forEach(item => {
@@ -801,110 +795,121 @@ function initVortexMode(images) {
             while (depth < -config.baseSpacing) depth += totalLength;
             while (depth > totalLength - config.baseSpacing) depth -= totalLength;
 
-            // Normalize depth: 0 = closest/front (big, centered), 1 = farthest/back (small, outer edge)
+            // Normalize depth: 0 = front/center, 1 = far back/tail
             const normalizedDepth = Math.max(0, Math.min(1, depth / totalLength));
 
-            // === TRUE VORTEX FUNNEL ===
-            // Movement factor: exponential - bottom moves most
-            const movementFactor = Math.pow(normalizedDepth, 2); // Stronger exponential
+            // === VISIBILITY LOGIC ===
+            // Images that have PASSED the front (negative depth) should be GONE
+            // Check if this image has scrolled past the viewer
+            const rawDepth = cumulativeSpacing[i] - scrollProgress;
+            const hasPassed = rawDepth < -config.baseSpacing * 0.5;
 
-            // Whirlwind rotation - bottom spins fast, top barely moves
-            const whirlwindRotation = baseWhirlwindAngle * movementFactor * 2;
+            if (hasPassed) {
+                // Image has passed - make it completely invisible
+                item.style.opacity = '0';
+                item.style.visibility = 'hidden';
+                return; // Skip all other calculations
+            } else {
+                item.style.visibility = 'visible';
+            }
 
-            // Self-rotation: deeper items spin around their own axis (like leaves in tornado)
-            const selfRotation = elapsedTime * config.oscillationSpeed * 5 * movementFactor;
+            // Movement factor: exponential - deeper items move more
+            const movementFactor = Math.pow(normalizedDepth, 2);
 
-            // Individual oscillation scales with depth
-            const individualOscillation = Math.sin(elapsedTime * config.oscillationSpeed * randomData.oscillationSpeedMult + randomData.oscillationPhase);
-            const oscillationOffset = individualOscillation * config.oscillationAmount * movementFactor;
+            // Whirlwind rotation - bottom swirls, top stable
+            const whirlwindRotation = baseWhirlwindAngle * movementFactor * 1.5;
+
+            // Self-spin for deeper items (like leaves in tornado)
+            const selfSpin = elapsedTime * config.oscillationSpeed * 3 * movementFactor;
+
+            // Individual oscillation
+            const individualOsc = Math.sin(elapsedTime * config.oscillationSpeed * randomData.oscillationSpeedMult + randomData.oscillationPhase);
+            const oscillationOffset = individualOsc * config.oscillationAmount * movementFactor;
 
             // Spiral progression
             const spiralProgress = normalizedDepth * config.spiralTurns * Math.PI * 2;
 
-            // Item angle in the vortex
+            // Item angle in vortex
             const itemAngle = baseTailAngle + spiralProgress + whirlwindRotation + randomData.angleVariation;
 
-            // === RADIUS: Increases with depth (deeper = further out) ===
-            // This creates the funnel shape: big image in center, small images on outer edges
+            // === RADIUS: Deeper = MUCH further out ===
             let radius;
             if (normalizedDepth < config.fullDisplayZone) {
-                // Front image - perfectly centered
+                // At full display - perfectly centered
                 radius = 0;
             } else if (normalizedDepth < config.transitionZone) {
-                // Transition - start moving outward
+                // Transition zone - start moving out
                 const t = (normalizedDepth - config.fullDisplayZone) / (config.transitionZone - config.fullDisplayZone);
-                // Use exponential curve so it stays closer to center longer
-                radius = Math.pow(t, 0.5) * config.tailMinRadius;
+                radius = t * config.tailMinRadius;
             } else {
-                // Tail - radius increases with depth (exponential for dramatic spread)
+                // Tail - radius increases DRAMATICALLY with depth
                 const tailProgress = (normalizedDepth - config.transitionZone) / (1 - config.transitionZone);
-                // Exponential radius increase - deepest items are WAY out
-                radius = config.tailMinRadius + Math.pow(tailProgress, 1.5) * (config.tailMaxRadius - config.tailMinRadius);
+                // Exponential curve for much larger spread at the end
+                radius = config.tailMinRadius + Math.pow(tailProgress, 1.2) * (config.tailMaxRadius - config.tailMinRadius);
             }
 
-            // Add breathing oscillation to radius
-            radius += oscillationOffset * 0.4;
+            // Add oscillation breathing
+            radius += oscillationOffset * 0.5;
 
-            // Final X/Y position on the spiral
+            // Final X/Y position
             const x = Math.cos(itemAngle) * radius;
             const y = Math.sin(itemAngle) * radius * config.tailSpread;
 
-            // Size: full at center, decreases toward tail
+            // === SIZE: Full at center, smaller toward tail ===
             let sizeProgress;
             if (normalizedDepth < config.fullDisplayZone) {
                 sizeProgress = 1;
             } else if (normalizedDepth < config.transitionZone) {
                 const t = (normalizedDepth - config.fullDisplayZone) / (config.transitionZone - config.fullDisplayZone);
-                sizeProgress = 1 - t * 0.15; // Only slight decrease in transition
+                sizeProgress = 1 - t * 0.2;
             } else {
                 const tailProgress = (normalizedDepth - config.transitionZone) / (1 - config.transitionZone);
-                // Smaller as going deeper
-                sizeProgress = 0.85 * Math.pow(1 - tailProgress, 1.5);
+                sizeProgress = 0.8 * Math.pow(1 - tailProgress, 1.3);
             }
             const size = config.minSize + (config.maxSize - config.minSize) * sizeProgress;
 
-            // === OPACITY: Tail items are semi-transparent ===
-            // Full opacity only for center image, fade out as images go deeper
-            let opacity;
-            if (normalizedDepth < config.fullDisplayZone) {
-                // Front image - fully visible
-                opacity = 1;
-            } else if (normalizedDepth < config.transitionZone) {
-                // Transition zone - start fading
-                const t = (normalizedDepth - config.fullDisplayZone) / (config.transitionZone - config.fullDisplayZone);
-                opacity = 1 - t * 0.3; // Fade to 70%
-            } else {
-                // Tail - progressively more transparent
-                const tailProgress = (normalizedDepth - config.transitionZone) / (1 - config.transitionZone);
-                // Deeper = more transparent (but never fully invisible)
-                opacity = 0.7 - tailProgress * 0.5; // Range: 70% down to 20%
+            // === OPACITY: Always visible, blur controls visibility instead ===
+            // Full opacity throughout - blur handles the "fading" effect
+            let opacity = 1;
+            // Only fade when very close to passing the front
+            if (normalizedDepth < 0.02) {
+                opacity = normalizedDepth / 0.02;
             }
-            // Very front items fading out
-            if (normalizedDepth < 0.01) {
-                opacity = normalizedDepth / 0.01;
+
+            // === BLUR: Heavy blur in tail, clears up as approaching center ===
+            let blurAmount;
+            if (normalizedDepth < config.fullDisplayZone) {
+                // At full display - perfectly clear
+                blurAmount = 0;
+            } else if (normalizedDepth < config.transitionZone) {
+                // Transition - slight blur that clears as approaching
+                const t = (normalizedDepth - config.fullDisplayZone) / (config.transitionZone - config.fullDisplayZone);
+                blurAmount = t * 3; // Max 3px blur in transition
+            } else {
+                // Tail - progressively more blurry
+                const tailProgress = (normalizedDepth - config.transitionZone) / (1 - config.transitionZone);
+                blurAmount = 3 + tailProgress * 8; // 3px to 11px blur
             }
 
             // Rotation to face camera
             let rotationFactor;
             if (normalizedDepth < config.fullDisplayZone) {
-                rotationFactor = 0; // Perfectly upright at center
+                rotationFactor = 0; // Perfectly upright
             } else if (normalizedDepth < config.transitionZone) {
                 rotationFactor = (normalizedDepth - config.fullDisplayZone) / (config.transitionZone - config.fullDisplayZone);
             } else {
                 rotationFactor = 1;
             }
 
-            // Tilt outward for 3D effect
+            // Tilt for 3D depth
             const tiltAmount = config.funnelTilt * normalizedDepth * rotationFactor;
-            const rotateY = Math.cos(itemAngle) * tiltAmount * 0.5;
-            const rotateX = Math.sin(itemAngle) * tiltAmount * 0.3;
+            const rotateY = Math.cos(itemAngle) * tiltAmount * 0.4;
+            const rotateX = Math.sin(itemAngle) * tiltAmount * 0.25;
 
-            // Z rotation: combines spiral twist + whirlwind + SELF ROTATION
-            // Self rotation makes deeper items spin on their own axis
-            const baseZRot = (spiralProgress * (180 / Math.PI) * 0.08);
-            const whirlZRot = (whirlwindRotation * (180 / Math.PI) * 0.15);
-            const selfZRot = (selfRotation * (180 / Math.PI)) * 0.3; // Own axis rotation
-            const rotateZ = (baseZRot + whirlZRot + selfZRot) * rotationFactor;
+            // Z rotation: spiral twist + self spin
+            const baseZRot = (spiralProgress * (180 / Math.PI) * 0.06);
+            const selfZRot = (selfSpin * (180 / Math.PI)) * 0.2;
+            const rotateZ = (baseZRot + selfZRot) * rotationFactor;
 
             // Z position for depth sorting
             const zPos = -normalizedDepth * config.tunnelDepth;
@@ -917,9 +922,9 @@ function initVortexMode(images) {
                 left: `${x - size / 2}px`,
                 top: `${y - size / 2}px`,
                 transform: `translateZ(${zPos}px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) rotateZ(${rotateZ}deg)`,
-                opacity: Math.max(0.15, Math.min(1, opacity)), // Min 15% opacity so always slightly visible
+                opacity: Math.max(0, Math.min(1, opacity)),
                 zIndex: zIndex,
-                filter: normalizedDepth > config.transitionZone ? `blur(${normalizedDepth * 1.5}px)` : 'none'
+                filter: blurAmount > 0 ? `blur(${blurAmount}px)` : 'none'
             });
         });
     }
