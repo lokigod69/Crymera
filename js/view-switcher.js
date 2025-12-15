@@ -594,9 +594,9 @@ function initSphereMode(images) {
     const stage = document.querySelector('.sphere-stage');
     if (stage.children.length > 0) return;
 
-    const radius = 350; // Sphere radius
+    const radius = 500; // Sphere radius (increased for larger images)
     const count = images.length;
-    const imageSize = 150; // Size of each image
+    const imageSize = 300; // Size of each image (doubled for better visibility)
 
     // Center the stage in the container
     gsap.set(stage, {
