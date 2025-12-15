@@ -693,6 +693,7 @@ function initVortexMode(images) {
     if (stage.children.length > 0) return;
 
     const totalItems = images.length;
+    const startTime = performance.now(); // For animation oscillation
 
     // Configuration for the spiral vortex
     const config = {
@@ -705,9 +706,11 @@ function initVortexMode(images) {
         funnelTilt: 55,            // How much images tilt outward
         minSize: 60,               // Minimum image size (far)
         maxSize: 500,              // Maximum image size (close/full display)
-        fullDisplayZone: 0.08,     // Zone (0-1) where image is at full size before fading
-        fadeOutZone: 0.03,         // Zone for fade out after full display
-        fadeInStart: 0.85          // Start fading in from this depth
+        fullDisplayZone: 0.02,     // Zone (0-1) where image is at full size (0% rotation) - REDUCED
+        transitionZone: 0.15,      // Zone where rotation transitions from tilted to upright
+        fadeInStart: 0.85,         // Start fading in from this depth
+        oscillationSpeed: 0.0008,  // Speed of position oscillation
+        oscillationAmount: 30      // Max pixels of oscillation
     };
 
     // Pre-calculate cumulative spacing for exponential growth
@@ -718,6 +721,19 @@ function initVortexMode(images) {
         cumulativeSpacing.push(prevSpacing + additionalSpacing);
     }
     const totalLength = cumulativeSpacing[totalItems];
+
+    // Generate random offsets per item for starting positions
+    const itemRandomData = images.map((_, i) => ({
+        // Random starting angle offset (where on spiral it starts - left, right, top, bottom)
+        angleOffset: Math.random() * Math.PI * 2,
+        // Random oscillation phase (so they don't all move in sync)
+        oscillationPhase: Math.random() * Math.PI * 2,
+        // Random oscillation speed multiplier (0.7 to 1.3x)
+        oscillationSpeedMult: 0.7 + Math.random() * 0.6,
+        // Random oscillation direction bias (which way it prefers to drift)
+        driftX: (Math.random() - 0.5) * 2,
+        driftY: (Math.random() - 0.5) * 2
+    }));
 
     // Create items
     images.forEach((src, i) => {
@@ -759,9 +775,12 @@ function initVortexMode(images) {
 
     function updateVortex() {
         const items = stage.querySelectorAll('.vortex-item');
+        const currentTime = performance.now();
+        const elapsedTime = currentTime - startTime;
 
         items.forEach(item => {
             const i = parseInt(item.dataset.index);
+            const randomData = itemRandomData[i];
 
             // Calculate depth using cumulative spacing for exponential distribution
             let depth = cumulativeSpacing[i] - scrollProgress;
@@ -776,61 +795,84 @@ function initVortexMode(images) {
             // Radius increases with depth (funnel shape) with slight variation
             const radius = config.maxRadius * Math.pow(normalizedDepth, 0.8);
 
-            // Spiral angle with progressive rotation
-            const baseAngle = (i / totalItems) * Math.PI * 2 * 0.5; // Less initial spread
+            // Spiral angle with progressive rotation + random starting offset
+            const baseAngle = (i / totalItems) * Math.PI * 2 * 0.5 + randomData.angleOffset;
             const spiralAngle = baseAngle + normalizedDepth * config.spiralTurns * Math.PI * 2;
 
+            // Calculate oscillation based on time and random phase
+            const oscillationTime = elapsedTime * config.oscillationSpeed * randomData.oscillationSpeedMult;
+            const oscillationX = Math.sin(oscillationTime + randomData.oscillationPhase) * config.oscillationAmount * randomData.driftX;
+            const oscillationY = Math.cos(oscillationTime * 0.7 + randomData.oscillationPhase) * config.oscillationAmount * randomData.driftY;
+
+            // Reduce oscillation as item gets closer to center (should stabilize for full display)
+            const oscillationFactor = Math.min(1, normalizedDepth / config.transitionZone);
+
             // Position on spiral in 2D plane
-            const x = Math.cos(spiralAngle) * radius;
-            const baseY = Math.sin(spiralAngle) * radius;
+            const baseX = Math.cos(spiralAngle) * radius;
+            const baseYPos = Math.sin(spiralAngle) * radius;
 
             // Apply spiral tilt - creates the "tail" effect swinging left/right
-            const tiltRadian = config.spiralTiltAngle * (Math.PI / 180);
-            // The Y position sways based on depth and spiral position
             const tiltOffset = Math.sin(spiralAngle * 0.5 + normalizedDepth * Math.PI) * radius * 0.3;
-            const y = baseY + tiltOffset;
 
-            // Size calculation with full display zone
-            // Images should be at full size when closer, scale down as they go further
+            // Final position with oscillation (reduced as approaching center)
+            const x = baseX + oscillationX * oscillationFactor;
+            const y = baseYPos + tiltOffset + oscillationY * oscillationFactor;
+
+            // Size calculation - full size when very close, scale down with depth
             let sizeProgress;
-            if (normalizedDepth < config.fullDisplayZone + config.fadeOutZone) {
-                // In or near the full display zone - full size or transitioning
+            if (normalizedDepth < config.fullDisplayZone) {
+                // At full display zone - maximum size
                 sizeProgress = 1;
+            } else if (normalizedDepth < config.transitionZone) {
+                // Transition zone - smoothly scale up as approaching
+                const transitionProgress = (normalizedDepth - config.fullDisplayZone) / (config.transitionZone - config.fullDisplayZone);
+                sizeProgress = 1 - transitionProgress * 0.3; // Only reduce 30% in transition
             } else {
-                // Scale down based on depth beyond the display zone
-                const depthBeyondDisplay = normalizedDepth - config.fullDisplayZone - config.fadeOutZone;
-                const remainingDepthRange = 1 - config.fullDisplayZone - config.fadeOutZone;
-                const scaleRatio = depthBeyondDisplay / remainingDepthRange;
-                sizeProgress = Math.pow(1 - scaleRatio, 1.5);
+                // Beyond transition - scale based on depth
+                const depthBeyondTransition = normalizedDepth - config.transitionZone;
+                const remainingDepthRange = 1 - config.transitionZone;
+                const scaleRatio = depthBeyondTransition / remainingDepthRange;
+                sizeProgress = 0.7 * Math.pow(1 - scaleRatio, 1.5);
             }
             const size = config.minSize + (config.maxSize - config.minSize) * sizeProgress;
 
-            // Opacity logic: 
-            // - Full opacity while approaching and at full size
-            // - Only fade out AFTER reaching full display
-            // - Fade in from the back
+            // Opacity logic:
+            // - FULL OPACITY from back until reaching full display (upright square)
+            // - Only fade OUT after passing through the front
             let opacity = 1;
             if (normalizedDepth > config.fadeInStart) {
-                // Fade in from the back
+                // Fade in from the very back
                 opacity = (1 - normalizedDepth) / (1 - config.fadeInStart);
-            } else if (normalizedDepth < config.fadeOutZone) {
-                // Fade out only after passing through full display zone
-                opacity = normalizedDepth / config.fadeOutZone;
             }
-            // Full opacity in the display zone - no blur or fade until fully shown
-            if (normalizedDepth >= config.fadeOutZone && normalizedDepth <= config.fullDisplayZone + config.fadeOutZone) {
-                opacity = 1;
+            // NO FADE until reaching absolute front - image stays opaque while approaching
+            // Only fade out after passing the front/full display position
+            if (normalizedDepth < 0.01) {
+                // Fade out only when passing very close to camera
+                opacity = normalizedDepth / 0.01;
             }
 
             // 3D rotations for dynamic spiral effect
-            // Apply tilt based on position in spiral
-            const tiltAmount = config.funnelTilt * normalizedDepth;
+            // Rotation should reduce to 0 (upright) as item approaches full display
+            let rotationFactor;
+            if (normalizedDepth < config.fullDisplayZone) {
+                // At full display - no rotation, perfectly upright
+                rotationFactor = 0;
+            } else if (normalizedDepth < config.transitionZone) {
+                // Transition zone - smoothly reduce rotation
+                rotationFactor = (normalizedDepth - config.fullDisplayZone) / (config.transitionZone - config.fullDisplayZone);
+            } else {
+                // Full rotation based on position in spiral
+                rotationFactor = 1;
+            }
+
+            const tiltAmount = config.funnelTilt * normalizedDepth * rotationFactor;
             const rotateY = Math.cos(spiralAngle) * tiltAmount;
             const rotateX = Math.sin(spiralAngle) * tiltAmount;
 
-            // Add extra Z rotation for the spiral "twist" effect
-            const rotateZ = (spiralAngle * (180 / Math.PI) * 0.2) +
-                (Math.sin(normalizedDepth * Math.PI * 2) * 5); // Gentle oscillation
+            // Z rotation for spiral twist - also reduces to 0 for upright display
+            const baseRotateZ = (spiralAngle * (180 / Math.PI) * 0.2) +
+                (Math.sin(normalizedDepth * Math.PI * 2) * 5);
+            const rotateZ = baseRotateZ * rotationFactor;
 
             // Z position for proper depth sorting
             const zPos = -depth;
@@ -847,7 +889,7 @@ function initVortexMode(images) {
                 transform: `translateZ(${zPos}px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) rotateZ(${rotateZ}deg)`,
                 opacity: Math.max(0, Math.min(1, opacity)),
                 zIndex: zIndex,
-                filter: opacity < 1 ? `blur(${(1 - opacity) * 2}px)` : 'none'
+                filter: normalizedDepth > config.transitionZone && opacity < 1 ? `blur(${(1 - opacity) * 2}px)` : 'none'
             });
         });
     }
