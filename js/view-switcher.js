@@ -788,30 +788,53 @@ function initVortexMode(images) {
             const i = parseInt(item.dataset.index);
             const randomData = itemRandomData[i];
 
-            // Calculate depth
-            let depth = cumulativeSpacing[i] - scrollProgress;
+            // Calculate raw depth (before wrapping)
+            const rawDepth = cumulativeSpacing[i] - scrollProgress;
 
-            // Wrap around for infinite scroll
-            while (depth < -config.baseSpacing) depth += totalLength;
+            // === FRONT ZONE: Image has passed the display point ===
+            // If rawDepth is negative, image has passed the viewer
+            const exitThreshold = config.baseSpacing * 1.5; // Allow 2-3 scrolls before vanishing
+
+            if (rawDepth < -exitThreshold) {
+                // Image has fully passed - completely invisible, skip to next
+                item.style.opacity = '0';
+                item.style.visibility = 'hidden';
+                return;
+            }
+
+            item.style.visibility = 'visible';
+
+            // Check if image is in the "exiting" phase (passed front, fading out)
+            const isExiting = rawDepth < 0;
+
+            // For exiting images: fade out smoothly, stay at full size, no blur
+            if (isExiting) {
+                // Calculate exit progress: 0 = just passed, 1 = about to vanish
+                const exitProgress = Math.abs(rawDepth) / exitThreshold;
+
+                // Fade out as it exits
+                const opacity = 1 - exitProgress;
+
+                // Stay centered, full size, no blur while exiting
+                Object.assign(item.style, {
+                    width: `${config.maxSize}px`,
+                    height: `${config.maxSize}px`,
+                    left: `${-config.maxSize / 2}px`,
+                    top: `${-config.maxSize / 2}px`,
+                    transform: `translateZ(0px)`,
+                    opacity: Math.max(0, opacity),
+                    zIndex: 100,
+                    filter: 'none'
+                });
+                return;
+            }
+
+            // Wrap around for infinite scroll (only for items behind viewer)
+            let depth = rawDepth;
             while (depth > totalLength - config.baseSpacing) depth -= totalLength;
 
             // Normalize depth: 0 = front/center, 1 = far back/tail
             const normalizedDepth = Math.max(0, Math.min(1, depth / totalLength));
-
-            // === VISIBILITY LOGIC ===
-            // Images that have PASSED the front (negative depth) should be GONE
-            // Check if this image has scrolled past the viewer
-            const rawDepth = cumulativeSpacing[i] - scrollProgress;
-            const hasPassed = rawDepth < -config.baseSpacing * 0.5;
-
-            if (hasPassed) {
-                // Image has passed - make it completely invisible
-                item.style.opacity = '0';
-                item.style.visibility = 'hidden';
-                return; // Skip all other calculations
-            } else {
-                item.style.visibility = 'visible';
-            }
 
             // Movement factor: exponential - deeper items move more
             const movementFactor = Math.pow(normalizedDepth, 2);
@@ -819,7 +842,7 @@ function initVortexMode(images) {
             // Whirlwind rotation - bottom swirls, top stable
             const whirlwindRotation = baseWhirlwindAngle * movementFactor * 1.5;
 
-            // Self-spin for deeper items (like leaves in tornado)
+            // Self-spin for deeper items
             const selfSpin = elapsedTime * config.oscillationSpeed * 3 * movementFactor;
 
             // Individual oscillation
@@ -844,7 +867,6 @@ function initVortexMode(images) {
             } else {
                 // Tail - radius increases DRAMATICALLY with depth
                 const tailProgress = (normalizedDepth - config.transitionZone) / (1 - config.transitionZone);
-                // Exponential curve for much larger spread at the end
                 radius = config.tailMinRadius + Math.pow(tailProgress, 1.2) * (config.tailMaxRadius - config.tailMinRadius);
             }
 
@@ -868,13 +890,8 @@ function initVortexMode(images) {
             }
             const size = config.minSize + (config.maxSize - config.minSize) * sizeProgress;
 
-            // === OPACITY: Always visible, blur controls visibility instead ===
-            // Full opacity throughout - blur handles the "fading" effect
+            // === OPACITY: Full for approaching images ===
             let opacity = 1;
-            // Only fade when very close to passing the front
-            if (normalizedDepth < 0.02) {
-                opacity = normalizedDepth / 0.02;
-            }
 
             // === BLUR: Heavy blur in tail, clears up as approaching center ===
             let blurAmount;
@@ -884,11 +901,11 @@ function initVortexMode(images) {
             } else if (normalizedDepth < config.transitionZone) {
                 // Transition - slight blur that clears as approaching
                 const t = (normalizedDepth - config.fullDisplayZone) / (config.transitionZone - config.fullDisplayZone);
-                blurAmount = t * 3; // Max 3px blur in transition
+                blurAmount = t * 3;
             } else {
                 // Tail - progressively more blurry
                 const tailProgress = (normalizedDepth - config.transitionZone) / (1 - config.transitionZone);
-                blurAmount = 3 + tailProgress * 8; // 3px to 11px blur
+                blurAmount = 3 + tailProgress * 8;
             }
 
             // Rotation to face camera
