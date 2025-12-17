@@ -791,12 +791,10 @@ function initVortexMode(images) {
             // Calculate raw depth (before wrapping)
             const rawDepth = cumulativeSpacing[i] - scrollProgress;
 
-            // === FRONT ZONE: Image has passed the display point ===
-            // If rawDepth is negative, image has passed the viewer
-            const exitThreshold = config.baseSpacing * 1.5; // Allow 2-3 scrolls before vanishing
-
-            if (rawDepth < -exitThreshold) {
-                // Image has fully passed - completely invisible, skip to next
+            // === IMMEDIATE VANISH: Image passed the display point ===
+            // If rawDepth is negative (even slightly), image has passed and should vanish immediately
+            if (rawDepth < 0) {
+                // Image has passed - vanish immediately, don't block images behind
                 item.style.opacity = '0';
                 item.style.visibility = 'hidden';
                 return;
@@ -804,30 +802,6 @@ function initVortexMode(images) {
 
             item.style.visibility = 'visible';
 
-            // Check if image is in the "exiting" phase (passed front, fading out)
-            const isExiting = rawDepth < 0;
-
-            // For exiting images: fade out smoothly, stay at full size, no blur
-            if (isExiting) {
-                // Calculate exit progress: 0 = just passed, 1 = about to vanish
-                const exitProgress = Math.abs(rawDepth) / exitThreshold;
-
-                // Fade out as it exits
-                const opacity = 1 - exitProgress;
-
-                // Stay centered, full size, no blur while exiting
-                Object.assign(item.style, {
-                    width: `${config.maxSize}px`,
-                    height: `${config.maxSize}px`,
-                    left: `${-config.maxSize / 2}px`,
-                    top: `${-config.maxSize / 2}px`,
-                    transform: `translateZ(0px)`,
-                    opacity: Math.max(0, opacity),
-                    zIndex: 100,
-                    filter: 'none'
-                });
-                return;
-            }
 
             // Wrap around for infinite scroll (only for items behind viewer)
             let depth = rawDepth;
